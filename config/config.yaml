@@ -1,0 +1,3 @@
+DEFAULT_SOURCE_FILEPATH : "reads/"
+DEFAULT_DEST_FILEPATH : "results/"
+RENAMED_READS_FILEPATH : "renamed_raw_reads/"

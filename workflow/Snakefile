@@ -1,17 +1,23 @@
-files = glob_wildcards("reads/{fname}")
-(name1, name2, number, lane, read, segment,) = glob_wildcards("reads/{name1}-{name2}_{number}_{lane}_{read}_{segment}.fastq.gz")
+# Reading configuration file
+configfile: "config/config.yaml"
+DEFAULT_SOURCE_FILEPATH = config.get("DEFAULT_SOURCE_FILEPATH", "reads/")
+DEFAULT_DEST_FILEPATH = config.get("DEFAULT_DEST_FILEPATH", "results/")
+RENAMED_READS_FILEPATH = config.get("RENAMED_READS_FILEPATH", "renamed_raw_reads/")
+
+# Searching for Illumina files
+(name1, name2, number, lane, read, segment,) = glob_wildcards(DEFAULT_SOURCE_FILEPATH+ "{name1}-{name2}_{number}_{lane}_{read}_{segment}.fastq.gz")
 
 rule all:
     input:
         expand(
-            "results/renamed_raw_reads/{name2}_{read}.fastq.gz",
+            DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{name2}_{read}.fastq.gz",
             zip, name2 = name2,read  = read
             )
 
 rule renaming_files:
     input:
         expand(
-            "reads/{name1}-{name2}_{number}_{lane}_{read}_{segment}.fastq.gz",
+            DEFAULT_SOURCE_FILEPATH + "{name1}-{name2}_{number}_{lane}_{read}_{segment}.fastq.gz",
             zip,
             name1 = name1,name2 = name2,
             number = number,lane = lane,
@@ -19,7 +25,7 @@ rule renaming_files:
             )
     output:
         expand(
-            "results/renamed_raw_reads/{name2}_{read}.fastq.gz",
+            DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{name2}_{read}.fastq.gz",
             zip,name2 = name2,read  = read
             ),
     script:
