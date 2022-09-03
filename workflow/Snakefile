@@ -1,4 +1,26 @@
-# Main entrypoint of the workflow. 
-# Please follow the best practices: 
-# https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
-# in particular regarding the standardized folder structure mentioned there. 
+files = glob_wildcards("reads/{fname}")
+(name1, name2, number, lane, read, segment,) = glob_wildcards("reads/{name1}-{name2}_{number}_{lane}_{read}_{segment}.fastq.gz")
+
+rule all:
+    input:
+        expand(
+            "results/renamed_raw_reads/{name2}_{read}.fastq.gz",
+            zip, name2 = name2,read  = read
+            )
+
+rule renaming_files:
+    input:
+        expand(
+            "reads/{name1}-{name2}_{number}_{lane}_{read}_{segment}.fastq.gz",
+            zip,
+            name1 = name1,name2 = name2,
+            number = number,lane = lane,
+            read = read, segment = segment
+            )
+    output:
+        expand(
+            "results/renamed_raw_reads/{name2}_{read}.fastq.gz",
+            zip,name2 = name2,read  = read
+            ),
+    script:
+        "scripts/renaming_files.py"

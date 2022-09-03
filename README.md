@@ -9,4 +9,31 @@ A Snakemake workflow for `A Snakemake workflow for raw illumine reads to draft a
 
 ## Usage
 
+### Creating an environment from an environment.yaml file
+
+First, make sure to activate the conda base environment with
+``` bash
+conda activate base
+```
+
+The environment.yaml file can be used to install all required software into an isolated Conda environment with the name sm_wgs via
+``` bash
+mamba env create --name sm_wgs --file environment.yaml
+```
+O, using conda: 
+``` bash
+conda env create --name sm_wgs --file environment.yaml
+```
+
+To activate this environment, use
+``` bash
+conda activate sm_wgs
+```
+
+To deactivate an active environment, use
+
+``` bash
+conda deactivate
+```
+
 TODO!
