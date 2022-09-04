@@ -7,65 +7,65 @@ TRIMMED_READS_FILEPATH = config.get("TRIMMED_READS_FILEPATH", "trimmed/")
 
 
 # Searching for Illumina files
-(name1, name2, number, lane, read, segment,) = glob_wildcards(DEFAULT_SOURCE_FILEPATH+ "{name1}-{name2}_{number}_{lane}_{read}_{segment}.fastq.gz")
+(name, sample, number, lane, read, segment,) = glob_wildcards(DEFAULT_SOURCE_FILEPATH+ "{name}-{sample}_{number}_{lane}_{read}_{segment}.fastq.gz")
 
 rule all:
     input:
         expand(
-            DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{name2}_R1_val_1.fq.gz", name2 = name2),
+            DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1_val_1.fq.gz", sample = sample),
         expand(
-            DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{name2}_R2_val_2.fq.gz", name2 = name2),
+            DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2_val_2.fq.gz", sample = sample),
         expand(
-            DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{name2}_R1.fastq.gz_trimming_report.txt", name2 = name2),
+            DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1.fastq.gz_trimming_report.txt", sample = sample),
         expand(
-            DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{name2}_R2.fastq.gz_trimming_report.txt", name2 = name2)
+            DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2.fastq.gz_trimming_report.txt", sample = sample)
 
 rule renaming_files:
     input:
         expand(
-            DEFAULT_SOURCE_FILEPATH + "{name1}-{name2}_{number}_{lane}_{read}_{segment}.fastq.gz",
+            DEFAULT_SOURCE_FILEPATH + "{name}-{sample}_{number}_{lane}_{read}_{segment}.fastq.gz",
             zip,
-            name1 = name1,name2 = name2,
+            name = name,sample = sample,
             number = number,lane = lane,
             read = read, segment = segment
             )
     output:
         expand(
-            DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{name2}_{read}.fastq.gz",
-            zip,name2 = name2,read  = read
+            DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{sample}_{read}.fastq.gz",
+            zip,sample = sample,read  = read
             ),
     script:
         "scripts/renaming_files.py"
 
 rule trim_galore_pe:
     input:
-        [DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{name2}_R1.fastq.gz", DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{name2}_R2.fastq.gz"],
+        [DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{sample}_R1.fastq.gz", DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{sample}_R2.fastq.gz"],
     output:
-        DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{name2}_R1_val_1.fq.gz",
-        DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{name2}_R1.fastq.gz_trimming_report.txt",
-        DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{name2}_R2_val_2.fq.gz",
-        DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{name2}_R2.fastq.gz_trimming_report.txt",
+        DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1_val_1.fq.gz",
+        DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1.fastq.gz_trimming_report.txt",
+        DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2_val_2.fq.gz",
+        DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2.fastq.gz_trimming_report.txt",
     params:
         extra=" ".join(config.get("trim_galore", "")),
     log:
-        "logs/trim_galore/{name2}.log",
+        "logs/trim_galore/{sample}.log",
     wrapper:
         "v1.12.1/bio/trim_galore/pe"
 
 # rule trimming_reads:
 #     input:
-#         R1 = DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{name2}_R1.fastq.gz",
-#         R2 = DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{name2}_R2.fastq.gz",
+#         R1 = DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{sample}_R1.fastq.gz",
+#         R2 = DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{sample}_R2.fastq.gz",
 #     output:
-#         DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{name2}_R1.1.fq.gz",
-#         DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{name2}_R2.2.fq.gz",
-#         DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{name2}_R1.fastq.gz_trimming_report.txt",
-#         DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{name2}_R2.fastq.gz_trimming_report.txt",
+#         DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1.1.fq.gz",
+#         DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2.2.fq.gz",
+#         DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1.fastq.gz_trimming_report.txt",
+#         DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2.fastq.gz_trimming_report.txt",
 #     params:
 #         extra=" ".join(config.get("trim_galore", "")),
 #         outdir = DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH,
 #     log:
-#         "logs/trim_galore/{name2}.log",
+#         "logs/trim_galore/{sample}.log",
 #     conda:
 #         "envs/trim-galore.yaml"
 #     shell:
