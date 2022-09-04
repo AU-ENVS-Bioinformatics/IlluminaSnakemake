@@ -4,6 +4,10 @@ DEFAULT_SOURCE_FILEPATH = config.get("DEFAULT_SOURCE_FILEPATH", "reads/")
 DEFAULT_DEST_FILEPATH = config.get("DEFAULT_DEST_FILEPATH", "results/")
 RENAMED_READS_FILEPATH = config.get("RENAMED_READS_FILEPATH", "renamed_raw_reads/")
 TRIMMED_READS_FILEPATH = config.get("TRIMMED_READS_FILEPATH", "trimmed/")
+FASTQC_FILEPATH = config.get("FASTQC_FILEPATH", "allfastqc/")
+SPADES_FILEPATH = config.get("SPADES_FILEPATH", "spades/")
+QUAST_FILEPATH = config.get("QUAST_FILEPATH", "quast/")
+PROKKA_FILEPATH = config.get("PROKKA_FILEPATH", "prokka/")
 
 
 # Searching for Illumina files
@@ -11,10 +15,9 @@ TRIMMED_READS_FILEPATH = config.get("TRIMMED_READS_FILEPATH", "trimmed/")
 
 rule all:
     input:
-        expand(
-            DEFAULT_DEST_FILEPATH + "qc/fastqc/{sample}_R1.html", sample = sample),
-        expand(
-            DEFAULT_DEST_FILEPATH + "qc/fastqc/{sample}_R2.html", sample = sample)
+        expand(DEFAULT_DEST_FILEPATH + FASTQC_FILEPATH + "{sample}_R1.html", sample = sample),
+        expand(DEFAULT_DEST_FILEPATH + FASTQC_FILEPATH + "{sample}_R2.html", sample = sample),
+        expand(DEFAULT_DEST_FILEPATH + SPADES_FILEPATH + "{sample}_contigs.fasta", sample = sample),
 
 rule renaming_files:
     input:
@@ -52,8 +55,8 @@ rule generate_fastq_qc_statistics:
     input:
         DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R{read_n}_val_{read_n}.fq.gz"
     output:
-        html=DEFAULT_DEST_FILEPATH + "qc/fastqc/{sample}_R{read_n}.html",
-        zip=DEFAULT_DEST_FILEPATH + "qc/fastqc/{sample}_R{read_n}_fastqc.zip" # the suffix _fastqc.zip is necessary for multiqc to find the file. If not using multiqc, you are free to choose an arbitrary filename
+        html=DEFAULT_DEST_FILEPATH + FASTQC_FILEPATH + "{sample}_R{read_n}.html",
+        zip=DEFAULT_DEST_FILEPATH + FASTQC_FILEPATH + "{sample}_R{read_n}_fastqc.zip" # the suffix _fastqc.zip is necessary for multiqc to find the file. If not using multiqc, you are free to choose an arbitrary filename
     params:
         extra=" ".join(config.get("fastqc", "")),
     log:
@@ -61,3 +64,69 @@ rule generate_fastq_qc_statistics:
     threads: 1
     wrapper:
         "v1.12.1/bio/fastqc"
+
+rule spades:
+    input:
+        R1 =  DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1_val_1.fq.gz",
+        R2 =  DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2_val_2.fq.gz",
+    output:
+        outdir = directory(DEFAULT_DEST_FILEPATH + SPADES_FILEPATH+"{sample}_spades"),
+        contigs = DEFAULT_DEST_FILEPATH + SPADES_FILEPATH + "{sample}_contigs.fasta"
+    params:
+        extra=" ".join(config.get("spades", "")),
+    log:
+        "logs/spades/{sample}.log",
+    shell:
+        "spades.py {params.extra}"
+        " -o {output.outdir}"
+        " -1 {input.R1} -2 {input.R2}" + 
+        " >> {log} 2>&1"
+        "&& mv {output.outdir}/contigs.fasta {output.contigs}"
+
+rule generate_quality_assessment_genome_assemblies:
+    input:
+        fasta=DEFAULT_DEST_FILEPATH + SPADES_FILEPATH+"{sample}_spades/{sample}_contigs.fasta",
+        pe1= DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1_val_1.fq.gz",
+        pe2= DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2_val_2.fq.gz",
+    output:
+        multiext(DEFAULT_DEST_FILEPATH + QUAST_FILEPATH + "{sample}/report.", "html", "tex", "txt", "pdf", "tsv"),
+        multiext(DEFAULT_DEST_FILEPATH + QUAST_FILEPATH + "{sample}/transposed_report.", "tex", "txt", "tsv"),
+        multiext(
+            DEFAULT_DEST_FILEPATH + QUAST_FILEPATH +"{sample}/basic_stats/",
+            "cumulative_plot.pdf",
+            "GC_content_plot.pdf",
+            "gc.icarus.txt",
+            "genome_GC_content_plot.pdf",
+            "NGx_plot.pdf",
+            "Nx_plot.pdf",
+        ),
+        multiext(
+            DEFAULT_DEST_FILEPATH + QUAST_FILEPATH +"{sample}/contigs_reports/",
+            "all_alignments_genome.tsv",
+            "contigs_report_genome.mis_contigs.info",
+            "contigs_report_genome.stderr",
+            "contigs_report_genome.stdout",
+        ),
+        DEFAULT_DEST_FILEPATH + QUAST_FILEPATH + "{sample}/contigs_reports/minimap_output/genome.coords_tmp",
+        DEFAULT_DEST_FILEPATH + QUAST_FILEPATH + "{sample}/icarus.html",
+        DEFAULT_DEST_FILEPATH + QUAST_FILEPATH + "{sample}/icarus_viewers/contig_size_viewer.html",
+        DEFAULT_DEST_FILEPATH + QUAST_FILEPATH + "{sample}/quast.log",
+    log:
+        "logs/quast/{sample}.log",
+    params:
+        extra=" ".join(config.get("quast", "")),
+    wrapper:
+        "v1.12.1/bio/quast"
+
+rule annotate_bacterial_genome:
+    input:
+        DEFAULT_DEST_FILEPATH + SPADES_FILEPATH+"{sample}_spades/{sample}_contigs.fasta",
+    output:
+        directory(DEFAULT_DEST_FILEPATH + PROKKA_FILEPATH + "{sample}_prokka"),
+    log:
+        "logs/prokka/{sample}.log",
+    params:
+        extra=" ".join(config.get("prokka", "")),
+    shell:
+        "prokka --outdir {output} {params.extra} "
+        "{input} >> {log} 2>&1"
