@@ -12,13 +12,9 @@ TRIMMED_READS_FILEPATH = config.get("TRIMMED_READS_FILEPATH", "trimmed/")
 rule all:
     input:
         expand(
-            DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1_val_1.fq.gz", sample = sample),
+            DEFAULT_DEST_FILEPATH + "qc/fastqc/{sample}_R1.html", sample = sample),
         expand(
-            DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2_val_2.fq.gz", sample = sample),
-        expand(
-            DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1.fastq.gz_trimming_report.txt", sample = sample),
-        expand(
-            DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2.fastq.gz_trimming_report.txt", sample = sample)
+            DEFAULT_DEST_FILEPATH + "qc/fastqc/{sample}_R2.html", sample = sample)
 
 rule renaming_files:
     input:
@@ -52,24 +48,16 @@ rule trim_galore_pe:
     wrapper:
         "v1.12.1/bio/trim_galore/pe"
 
-# rule trimming_reads:
-#     input:
-#         R1 = DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{sample}_R1.fastq.gz",
-#         R2 = DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{sample}_R2.fastq.gz",
-#     output:
-#         DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1.1.fq.gz",
-#         DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2.2.fq.gz",
-#         DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1.fastq.gz_trimming_report.txt",
-#         DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2.fastq.gz_trimming_report.txt",
-#     params:
-#         extra=" ".join(config.get("trim_galore", "")),
-#         outdir = DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH,
-#     log:
-#         "logs/trim_galore/{sample}.log",
-#     conda:
-#         "envs/trim-galore.yaml"
-#     shell:
-#         "trim_galore --paired {params.extra}"
-#         " -o {params.outdir}"
-#         " {input.R1} {input.R2}"
-#         " >> {log} 2>&1"
+rule generate_fastq_qc_statistics:
+    input:
+        DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R{read_n}_val_{read_n}.fq.gz"
+    output:
+        html=DEFAULT_DEST_FILEPATH + "qc/fastqc/{sample}_R{read_n}.html",
+        zip=DEFAULT_DEST_FILEPATH + "qc/fastqc/{sample}_R{read_n}_fastqc.zip" # the suffix _fastqc.zip is necessary for multiqc to find the file. If not using multiqc, you are free to choose an arbitrary filename
+    params:
+        extra=" ".join(config.get("fastqc", "")),
+    log:
+        "logs/fastqc/{sample}_R{read_n}.log"
+    threads: 1
+    wrapper:
+        "v1.12.1/bio/fastqc"
