@@ -115,4 +115,6 @@ rule annotate_bacterial_genome:
         extra=" ".join(config.get("prokka", "")),
     shell:
         "prokka --outdir {output} {params.extra} "
+        "--prefix {wildcards.sample} "
         "{input} >> {log} 2>&1"
+        #TODO locus-tag ask Thanassis

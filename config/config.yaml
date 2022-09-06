@@ -20,3 +20,7 @@ spades:
   - "-t 40" 
   - "--only-assembler" 
   - "--careful"
+
+prokka:
+  - "--compliant"
+  # Don't use --prefix
