@@ -73,7 +73,7 @@ rule generate_fastq_qc_statistics:
     wrapper:
         "v1.12.1/bio/fastqc"
 
-rule spades:
+rule assembling_genome:
     input:
         R1 =  f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1_val_1.fq.gz",
         R2 =  f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2_val_2.fq.gz",
