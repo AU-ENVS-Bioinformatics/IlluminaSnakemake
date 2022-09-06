@@ -31,6 +31,10 @@ rule renaming_files:
             number = number,lane = lane,
             read = read, segment = segment
             )
+    log:
+        expand(
+            "logs/renaming/{sample}_{read}.log",
+            zip, sample = sample, read  = read),
     output:
         expand(
             f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz",
