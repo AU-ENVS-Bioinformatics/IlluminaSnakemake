@@ -35,6 +35,8 @@ rule renaming_files:
         expand(
             "logs/renaming/{sample}_{read}.log",
             zip, sample = sample, read  = read),
+    conda:
+        "envs/renaming_files.yaml"
     output:
         expand(
             f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz",
@@ -43,7 +45,7 @@ rule renaming_files:
     script:
         "scripts/renaming_files.py"
 
-rule trim_galore_pe:
+rule trim_paired_end_reads:
     input:
         [f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_R1.fastq.gz",
          f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_R2.fastq.gz"],
@@ -56,6 +58,8 @@ rule trim_galore_pe:
         extra=" ".join(config.get("trim_galore", "")),
     log:
         "logs/trim_galore/{sample}.log",
+    conda:
+        "envs/trim_paired_end_reads.yaml",
     wrapper:
         "v1.12.1/bio/trim_galore/pe"
 
@@ -68,7 +72,9 @@ rule generate_fastq_qc_statistics:
     params:
         extra=" ".join(config.get("fastqc", "")),
     log:
-        "logs/fastqc/{sample}_R{read_n}.log"
+        "logs/fastqc/{sample}_R{read_n}.log",
+    conda:
+        "envs/generate_fastq_qc_statistics.yaml",
     threads: 1
     wrapper:
         "v1.12.1/bio/fastqc"
@@ -84,6 +90,8 @@ rule assembling_genome:
         extra=" ".join(config.get("spades", "")),
     log:
         "logs/spades/{sample}.log",
+    conda: 
+        "envs/assembling_genome.yaml",
     shell:
         "spades.py {params.extra}"
         " -o {output.outdir}"
@@ -101,6 +109,8 @@ rule generate_quality_assessment_genome_assemblies:
         report = f"{DEFAULT_DEST_FILEPATH}{QUAST_FILEPATH}{{sample}}/report.tsv",
     log:
         "logs/quast/{sample}.log",
+    conda: 
+        "envs/generate_quality_assessment_genome_assemblies.yaml",
     params:
         extra=" ".join(config.get("quast", "")),
     shell:
@@ -117,6 +127,8 @@ rule annotate_bacterial_genome:
         directory(f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka"),
     log:
         "logs/prokka/{sample}.log",
+    conda: 
+        "envs/annotate_bacterial_genome.yaml",
     params:
         extra=" ".join(config.get("prokka", "")),
     shell:
