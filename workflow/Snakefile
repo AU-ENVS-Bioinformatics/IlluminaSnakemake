@@ -11,20 +11,21 @@ PROKKA_FILEPATH = config.get("PROKKA_FILEPATH", "prokka/")
 
 
 # Searching for Illumina files
-(name, sample, number, lane, read, segment,) = glob_wildcards(DEFAULT_SOURCE_FILEPATH+ "{name}-{sample}_{number}_{lane}_{read}_{segment}.fastq.gz")
+regex_raw_illumina_files = f"{DEFAULT_SOURCE_FILEPATH}{{name}}-{{sample}}_{{number}}_{{lane}}_{{read}}_{{segment}}.fastq.gz"
+(name, sample, number, lane, read, segment,) = glob_wildcards(regex_raw_illumina_files)
 
 rule all:
     input:
-        expand(DEFAULT_DEST_FILEPATH + FASTQC_FILEPATH + "{sample}_R1.html", sample = sample),
-        expand(DEFAULT_DEST_FILEPATH + FASTQC_FILEPATH + "{sample}_R2.html", sample = sample),
-        expand(DEFAULT_DEST_FILEPATH + SPADES_FILEPATH + "{sample}_spades/{sample}_contigs.fasta", sample = sample),
-        expand(DEFAULT_DEST_FILEPATH + QUAST_FILEPATH + "{sample}/report.tsv", sample = sample),
-        expand(DEFAULT_DEST_FILEPATH + PROKKA_FILEPATH + "{sample}_prokka", sample = sample)
+        expand(f"{DEFAULT_DEST_FILEPATH}{FASTQC_FILEPATH}{{sample}}_R1.html", sample = sample),
+        expand(f"{DEFAULT_DEST_FILEPATH}{FASTQC_FILEPATH}{{sample}}_R2.html", sample = sample),
+        expand(f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta", sample = sample),
+        expand(f"{DEFAULT_DEST_FILEPATH}{QUAST_FILEPATH}{{sample}}/report.tsv", sample = sample),
+        expand(f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka", sample = sample)
 
 rule renaming_files:
     input:
         expand(
-            DEFAULT_SOURCE_FILEPATH + "{name}-{sample}_{number}_{lane}_{read}_{segment}.fastq.gz",
+            f"{DEFAULT_SOURCE_FILEPATH}{{name}}-{{sample}}_{{number}}_{{lane}}_{{read}}_{{segment}}.fastq.gz",
             zip,
             name = name,sample = sample,
             number = number,lane = lane,
@@ -32,20 +33,21 @@ rule renaming_files:
             )
     output:
         expand(
-            DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{sample}_{read}.fastq.gz",
-            zip,sample = sample,read  = read
+            f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz",
+            zip, sample = sample,read  = read
             ),
     script:
         "scripts/renaming_files.py"
 
 rule trim_galore_pe:
     input:
-        [DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{sample}_R1.fastq.gz", DEFAULT_DEST_FILEPATH + RENAMED_READS_FILEPATH + "{sample}_R2.fastq.gz"],
+        [f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_R1.fastq.gz",
+         f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_R2.fastq.gz"],
     output:
-        DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1_val_1.fq.gz",
-        DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1.fastq.gz_trimming_report.txt",
-        DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2_val_2.fq.gz",
-        DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2.fastq.gz_trimming_report.txt",
+        f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1_val_1.fq.gz",
+        f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1.fastq.gz_trimming_report.txt",
+        f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2_val_2.fq.gz",
+        f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2.fastq.gz_trimming_report.txt",
     params:
         extra=" ".join(config.get("trim_galore", "")),
     log:
@@ -55,10 +57,10 @@ rule trim_galore_pe:
 
 rule generate_fastq_qc_statistics:
     input:
-        DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R{read_n}_val_{read_n}.fq.gz"
+        f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R{{read_n}}_val_{{read_n}}.fq.gz"
     output:
-        html=DEFAULT_DEST_FILEPATH + FASTQC_FILEPATH + "{sample}_R{read_n}.html",
-        zip=DEFAULT_DEST_FILEPATH + FASTQC_FILEPATH + "{sample}_R{read_n}_fastqc.zip" # the suffix _fastqc.zip is necessary for multiqc to find the file. If not using multiqc, you are free to choose an arbitrary filename
+        html=f"{DEFAULT_DEST_FILEPATH}{FASTQC_FILEPATH}{{sample}}_R{{read_n}}.html",
+        zip= f"{DEFAULT_DEST_FILEPATH}{FASTQC_FILEPATH}{{sample}}_R{{read_n}}_fastqc.zip"
     params:
         extra=" ".join(config.get("fastqc", "")),
     log:
@@ -69,11 +71,11 @@ rule generate_fastq_qc_statistics:
 
 rule spades:
     input:
-        R1 =  DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1_val_1.fq.gz",
-        R2 =  DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2_val_2.fq.gz",
+        R1 =  f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1_val_1.fq.gz",
+        R2 =  f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2_val_2.fq.gz",
     output:
-        outdir = directory(DEFAULT_DEST_FILEPATH + SPADES_FILEPATH+"{sample}_spades"),
-        contigs = DEFAULT_DEST_FILEPATH + SPADES_FILEPATH + "{sample}_spades/{sample}_contigs.fasta"
+        outdir = directory(f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades"),
+        contigs = f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta"
     params:
         extra=" ".join(config.get("spades", "")),
     log:
@@ -87,12 +89,12 @@ rule spades:
 
 rule generate_quality_assessment_genome_assemblies:
     input:
-        fasta= DEFAULT_DEST_FILEPATH + SPADES_FILEPATH + "{sample}_spades/{sample}_contigs.fasta",
-        R1=DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R1_val_1.fq.gz",
-        R2= DEFAULT_DEST_FILEPATH + TRIMMED_READS_FILEPATH + "{sample}_R2_val_2.fq.gz",
+        fasta= f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta",
+        R1= f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1_val_1.fq.gz",
+        R2= f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2_val_2.fq.gz",
     output:
-        outdir = directory(DEFAULT_DEST_FILEPATH + QUAST_FILEPATH +"{sample}"),
-        report = DEFAULT_DEST_FILEPATH + QUAST_FILEPATH +"{sample}/report.tsv",
+        outdir = directory(f"{DEFAULT_DEST_FILEPATH}{QUAST_FILEPATH}{{sample}}"),
+        report = f"{DEFAULT_DEST_FILEPATH}{QUAST_FILEPATH}{{sample}}/report.tsv",
     log:
         "logs/quast/{sample}.log",
     params:
@@ -106,9 +108,9 @@ rule generate_quality_assessment_genome_assemblies:
 
 rule annotate_bacterial_genome:
     input:
-        DEFAULT_DEST_FILEPATH + SPADES_FILEPATH+"{sample}_spades/{sample}_contigs.fasta",
+        f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta",
     output:
-        directory(DEFAULT_DEST_FILEPATH + PROKKA_FILEPATH + "{sample}_prokka"),
+        directory(f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka"),
     log:
         "logs/prokka/{sample}.log",
     params:
