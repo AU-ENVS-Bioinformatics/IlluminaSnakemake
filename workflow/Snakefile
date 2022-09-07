@@ -24,26 +24,21 @@ rule all:
 
 rule renaming_files:
     input:
-        expand(
-            f"{DEFAULT_SOURCE_FILEPATH}{{name}}-{{sample}}_{{number}}_{{lane}}_{{read}}_{{segment}}.fastq.gz",
+        set(expand(
+            "{dir}{name}-{{sample}}_{number}_{lane}_{{read}}_{segment}.fastq.gz",
             zip,
-            name = name,sample = sample,
-            number = number,lane = lane,
-            read = read, segment = segment
-            )
+            name = name, number = number,
+            lane = lane, segment = segment,
+            dir = DEFAULT_SOURCE_FILEPATH
+            ))
     log:
-        expand(
-            "logs/renaming/{sample}_{read}.log",
-            zip, sample = sample, read  = read),
+        "logs/renaming/{sample}_{read}.log",
     conda:
         "envs/renaming_files.yaml"
     output:
-        expand(
-            f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz",
-            zip, sample = sample,read  = read
-            ),
-    script:
-        "scripts/renaming_files.py"
+        f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz"
+    shell:
+        "cp {input} {output}"
 
 rule trim_paired_end_reads:
     input:
