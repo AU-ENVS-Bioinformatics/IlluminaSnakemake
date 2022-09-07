@@ -129,12 +129,12 @@ rule assembling_genome:
         "envs/assembling_genome.yaml"
     threads: AVAILABLE_THREADS
     shell:
-        "spades.py {params.extra}"
-        " --threads {threads}"
-        " -o {output.outdir}"
-        " -1 {input.R1} -2 {input.R2}"
-        " >> {log} 2>&1"
-        "&& mv {output.outdir}/contigs.fasta {output.contigs}"
+        "spades.py {params.extra} "
+        "--threads {threads} "
+        "-o {output.outdir} "
+        "-1 {input.R1} -2 {input.R2} "
+        ">> {log} 2>&1 "
+        "&& mv {output.outdir}/contigs.fasta {output.contigs} "
 
 
 rule generate_quality_assessment_genome_assemblies:
@@ -154,7 +154,7 @@ rule generate_quality_assessment_genome_assemblies:
     threads: AVAILABLE_THREADS
     shell:
         "quast {params.extra} "
-        "--threads {threads}"
+        "--threads {threads} "
         "--pe1 {input.R1} --pe2 {input.R2} "
         "-o {output.outdir} "
         "{input.fasta} "
@@ -175,8 +175,8 @@ rule annotate_bacterial_genome:
     threads: AVAILABLE_THREADS
     shell:
         "prokka --outdir {output} {params.extra} "
-        "--cpus {threads}"
-        "--prefix {wildcards.sample} --locustag {wildcards.sample}"
+        "--cpus {threads} "
+        "--prefix {wildcards.sample} --locustag {wildcards.sample} "
         "{input} >> {log} 2>&1"
         #TODO locus-tag ask Thanassis
 
