@@ -51,7 +51,6 @@ rule all:
             f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}/txome_busco/prok", sample = sample
         )
 
-
 rule renaming_files:
     input:
         set(
@@ -76,6 +75,7 @@ rule renaming_files:
 
 trim_galore_params = config.get("trim_galore", "")
 trim_galore_params.append(f'--cores {AVAILABLE_THREADS}')
+
 rule trim_paired_end_reads:
     input:
         [
@@ -178,7 +178,6 @@ rule annotate_bacterial_genome:
         "--cpus {threads} "
         "--prefix {wildcards.sample} --locustag {wildcards.sample} "
         "{input} >> {log} 2>&1"
-        #TODO locus-tag ask Thanassis
 
 rule run_busco_prok:
     input:
