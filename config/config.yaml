@@ -1,11 +1,12 @@
-DEFAULT_SOURCE_FILEPATH: "reads/"
-DEFAULT_DEST_FILEPATH: "results/"
-RENAMED_READS_FILEPATH: "renamed_raw_reads/"
-TRIMMED_READS_FILEPATH: "trimmed/"
-FASTQC_FILEPATH: "allfastqc/"
-SPADES_FILEPATH: "spades/"
-QUAST_FILEPATH: "quast/"
-PROKKA_FILEPATH: "prokka/"
+DEFAULT_SOURCE_FILEPATH : "reads/"
+DEFAULT_DEST_FILEPATH : "results/"
+RENAMED_READS_FILEPATH : "renamed_raw_reads/"
+TRIMMED_READS_FILEPATH : "trimmed/"
+FASTQC_FILEPATH : "allfastqc/"
+SPADES_FILEPATH : "spades/"
+QUAST_FILEPATH : "quast/"
+PROKKA_FILEPATH : "prokka/"
+BUSCO_FILEPATH : "busco/"
 
 trim_galore:
   - "--length 60" #Discard reads that became shorter than INT because of either quality or adapter trimming
@@ -22,3 +23,6 @@ spades:
 prokka:
   - "--compliant" # Force Genbank/ENA/DDJB compliance
   # Don't use --prefix
+
+busco:
+  - "--auto-lineage"

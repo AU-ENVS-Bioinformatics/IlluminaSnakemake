@@ -10,7 +10,9 @@ FASTQC_FILEPATH = config.get("FASTQC_FILEPATH", "allfastqc/")
 SPADES_FILEPATH = config.get("SPADES_FILEPATH", "spades/")
 QUAST_FILEPATH = config.get("QUAST_FILEPATH", "quast/")
 PROKKA_FILEPATH = config.get("PROKKA_FILEPATH", "prokka/")
+BUSCO_FILEPATH = config.get("BUSCO_FILEPATH", "busco/")
 
+AVAILABLE_THREADS = int(workflow.cores * 0.75)
 
 # Searching for Illumina files
 regex_raw_illumina_files = f"{DEFAULT_SOURCE_FILEPATH}{{name}}-{{sample}}_{{number}}_{{lane}}_{{read}}_{{segment}}.fastq.gz"
@@ -45,7 +47,9 @@ rule all:
         expand(
             f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka", sample=sample
         ),
-
+        expand(
+            f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}/txome_busco/prok", sample = sample
+        )
 
 rule renaming_files:
     input:
@@ -69,6 +73,8 @@ rule renaming_files:
     shell:
         "cp {input} {output}"
 
+trim_galore_params = config.get("trim_galore", "")
+trim_galore_params.append(f'--cores {AVAILABLE_THREADS}')
 
 rule trim_paired_end_reads:
     input:
@@ -82,7 +88,7 @@ rule trim_paired_end_reads:
         f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2_val_2.fq.gz",
         f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2.fastq.gz_trimming_report.txt",
     params:
-        extra=" ".join(config.get("trim_galore", "")),
+        extra=" ".join(trim_galore_params),        
     log:
         "logs/trim_galore/{sample}.log",
     conda:
@@ -103,7 +109,7 @@ rule generate_fastq_qc_statistics:
         "logs/fastqc/{sample}_R{read_n}.log",
     conda:
         "envs/generate_fastq_qc_statistics.yaml"
-    threads: 1
+    threads: AVAILABLE_THREADS
     wrapper:
         "v1.12.1/bio/fastqc"
 
@@ -121,12 +127,14 @@ rule assembling_genome:
         "logs/spades/{sample}.log",
     conda:
         "envs/assembling_genome.yaml"
+    threads: AVAILABLE_THREADS
     shell:
-        "spades.py {params.extra}"
-        " -o {output.outdir}"
-        " -1 {input.R1} -2 {input.R2}"
-        " >> {log} 2>&1"
-        "&& mv {output.outdir}/contigs.fasta {output.contigs}"
+        "spades.py {params.extra} "
+        "--threads {threads} "
+        "-o {output.outdir} "
+        "-1 {input.R1} -2 {input.R2} "
+        ">> {log} 2>&1 "
+        "&& mv {output.outdir}/contigs.fasta {output.contigs} "
 
 
 rule generate_quality_assessment_genome_assemblies:
@@ -143,8 +151,10 @@ rule generate_quality_assessment_genome_assemblies:
         "envs/generate_quality_assessment_genome_assemblies.yaml"
     params:
         extra=" ".join(config.get("quast", "")),
+    threads: AVAILABLE_THREADS
     shell:
         "quast {params.extra} "
+        "--threads {threads} "
         "--pe1 {input.R1} --pe2 {input.R2} "
         "-o {output.outdir} "
         "{input.fasta} "
@@ -162,8 +172,25 @@ rule annotate_bacterial_genome:
         "envs/annotate_bacterial_genome.yaml"
     params:
         extra=" ".join(config.get("prokka", "")),
+    threads: AVAILABLE_THREADS
     shell:
         "prokka --outdir {output} {params.extra} "
-        "--prefix {wildcards.sample} "
+        "--cpus {threads} "
+        "--prefix {wildcards.sample} --locustag {wildcards.sample} "
         "{input} >> {log} 2>&1"
-        #TODO locus-tag ask Thanassis
+
+rule run_busco_prok:
+    input:
+        f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta",
+    output:
+        out_dir=directory(f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}/txome_busco/prok"),
+        dataset_dir=directory(f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}/resources/busco_downloads"),
+    log:
+        "logs/busco/{sample}.log",
+    params:
+        mode="genome",
+        # optional parameters
+        extra=" ".join(config.get("busco", "")),
+    threads: AVAILABLE_THREADS
+    wrapper:
+        "v1.12.2/bio/busco" 
