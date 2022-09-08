@@ -8,22 +8,20 @@ QUAST_FILEPATH : "quast/"
 PROKKA_FILEPATH : "prokka/"
 BUSCO_FILEPATH : "busco/"
 
-
-trim_galore: 
+trim_galore:
   - "--length 60" #Discard reads that became shorter than INT because of either quality or adapter trimming
   - "--trim-n" #Removes Ns from either side of the read.
   - "--illumina" #Illumina adapter
 
-fastqc: 
+fastqc:
   - "--quiet" #Supress all progress messages on stdout and only report errors.
 
-spades: 
-  - "-t 40" 
-  - "--only-assembler" 
-  - "--careful"
+spades:
+  - "--only-assembler" # Runs only assembling (without read error correction)
+  - "--careful" #Tries to reduce number of mismatches and short indels
 
 prokka:
-  - "--compliant"
+  - "--compliant" # Force Genbank/ENA/DDJB compliance
   # Don't use --prefix
 
 busco:
