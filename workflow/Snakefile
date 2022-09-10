@@ -29,6 +29,12 @@ regex_raw_illumina_files = f"{DEFAULT_SOURCE_FILEPATH}{{name}}-{{sample}}_{{numb
 rule all:
     input:
         expand(
+            f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz",
+            zip,
+            sample = sample,
+            read = read,
+        ),
+        expand(
             f"{DEFAULT_DEST_FILEPATH}{FASTQC_FILEPATH}{{sample}}_R1.html",
             sample=sample,
         ),
@@ -52,26 +58,18 @@ rule all:
         )
 
 rule renaming_files:
-    input:
-        set(
-            expand(
-                "{dir}{name}-{{sample}}_{number}_{lane}_{{read}}_{segment}.fastq.gz",
-                zip,
-                name=name,
-                number=number,
-                lane=lane,
-                segment=segment,
-                dir=DEFAULT_SOURCE_FILEPATH,
-            )
-        ),
-    log:
-        "logs/renaming/{sample}_{read}.log",
-    conda:
-        "envs/renaming_files.yaml"
+    params:
+        inputdir = f"{DEFAULT_SOURCE_FILEPATH}",
+        outdir = f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}",
     output:
-        f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz",
-    shell:
-        "cp {input} {output}"
+        expand(
+            f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz",
+            zip,
+            sample = sample,
+            read = read,
+        ),
+    script:
+        "scripts/renaming_files.py"
 
 trim_galore_params = config.get("trim_galore", "")
 trim_galore_params.append(f'--cores {AVAILABLE_THREADS}')
