@@ -11,7 +11,7 @@ SPADES_FILEPATH = config.get("SPADES_FILEPATH", "spades/")
 QUAST_FILEPATH = config.get("QUAST_FILEPATH", "quast/")
 PROKKA_FILEPATH = config.get("PROKKA_FILEPATH", "prokka/")
 BUSCO_FILEPATH = config.get("BUSCO_FILEPATH", "busco/")
-
+BARRNAP_FILEPATH = config.get("BARRNAP_FILEPATH", "barrnap/")
 AVAILABLE_THREADS = int(workflow.cores * 0.75)
 
 # Searching for Illumina files
@@ -55,6 +55,12 @@ rule all:
         ),
         expand(
             f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}/txome_busco/prok", sample = sample
+        ),
+        expand(
+            f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.fa", sample = sample
+        ),
+        expand(
+            f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.gff", sample = sample
         )
 
 rule renaming_files:
@@ -192,3 +198,30 @@ rule run_busco_prok:
     threads: AVAILABLE_THREADS
     wrapper:
         "v1.12.2/bio/busco" 
+
+rule finding_16s:
+    input:
+        f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta",
+    output:
+        fasta = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_rrna.fa",
+        gff = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_rrna.gff",
+    log:
+        "logs/barrnap/{sample}.log",
+    conda:
+        "envs/annotate_bacterial_genome.yaml"
+    shell:
+        "barrnap -o {output.fasta} < {input} > {output.gff} "
+        "2> {log}"
+rule filtering_16s:
+    input:
+        fasta = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_rrna.fa",
+        gff = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_rrna.gff",
+    output:
+        fasta = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.fa",
+        gff = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.gff",
+    params:
+        config.get("maximun_16s_allowed", 900)
+    log:
+        "logs/barrnap/{sample}_filtered.log"    
+    script:
+        "scripts/filter_16S_from_barrnap.py"

@@ -7,6 +7,8 @@ SPADES_FILEPATH : "spades/"
 QUAST_FILEPATH : "quast/"
 PROKKA_FILEPATH : "prokka/"
 BUSCO_FILEPATH : "busco/"
+BARRNAP_FILEPATH : "barrnap/"
+
 
 trim_galore:
   - "--length 60" #Discard reads that became shorter than INT because of either quality or adapter trimming
@@ -26,3 +28,8 @@ prokka:
 
 busco:
   - "--auto-lineage"
+
+barrnap:
+  - "--kingdom bac"  # from bac euk mito arc (default 'bac')
+
+maximun_16s_allowed: 900
