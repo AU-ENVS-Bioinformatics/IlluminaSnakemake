@@ -220,7 +220,7 @@ rule filtering_16s:
         fasta = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.fa",
         gff = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.gff",
     params:
-        config.get("maximun_16s_allowed", 900)
+        config.get("minumun_16s_allowed", 900)
     log:
         "logs/barrnap/{sample}_filtered.log"    
     script:
