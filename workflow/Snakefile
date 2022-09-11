@@ -75,7 +75,7 @@ rule renaming_files:
             read = read,
         ),
     log:
-        "logs/renaming_files/{sample}.log",
+        "logs/renaming_files/{wildcards.sample}_{wildcards.sample}.log",
     conda:
         "envs/base_python.yaml"
     script:
