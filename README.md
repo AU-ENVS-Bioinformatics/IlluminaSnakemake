@@ -78,7 +78,15 @@ In order to actually run the pipeline, you must indicate the number of maximum c
 snakemake -c 100
 ```
 
-First of all, let's inspect the directory structure **after** you run snakemake. You may be aware that new directories have been created (in addition to `reads`, where we moved the raw data files previously).
+Any Snakemake pipeline can be visualized using `--dag` as follows
+
+```bash
+snakemake --dag | dot -Tsvg > docs/dag.svg
+```
+
+![DAG](docs/dag.svg)
+
+Let's inspect the directory structure **after** you run snakemake. You may be aware that new directories have been created (in addition to `reads`, where we moved the raw data files previously).
 
 ```bash
 tree -L 2
