@@ -175,3 +175,14 @@ snakemake -c1 results/barrnap/MST109_filtered_rrna.fa --rerun-triggers mtime --c
 grep -c '>' results/barrnap/MST109_filtered_rrna.fa
 9
 ```
+
+Another very useful tool is `--summary`, which prints a table associating each output file with the rule used to generate it, the creation date and, optionally, the version of the tool used for creation. This flag, in addition to grep, can be very useful for checking the status of files. 
+
+```bash
+snakemake --summary --rerun-triggers mtime | grep 'contigs.fasta'
+    
+Building DAG of jobs...
+results/spades/MST103_spades/MST103_contigs.fasta       Sat Sep 10 10:44:32 2022        assembling_genome       -       logs/spades/MST103.log    ok      no update
+results/spades/MST109_spades/MST109_contigs.fasta       Sat Sep 10 09:57:56 2022        assembling_genome       -       logs/spades/MST109.log    ok      no update
+results/spades/MST102_spades/MST102_contigs.fasta       Sat Sep 10 10:35:02 2022        assembling_genome       -       logs/spades/MST102.log    ok      no update
+```
