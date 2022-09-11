@@ -74,6 +74,10 @@ rule renaming_files:
             sample = sample,
             read = read,
         ),
+    log:
+        "logs/renaming_files/{sample}.log",
+    conda:
+        "envs/base_python.yaml"
     script:
         "scripts/renaming_files.py"
 
@@ -221,6 +225,8 @@ rule filtering_16s:
         gff = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.gff",
     params:
         config.get("minumun_16s_allowed", 900)
+    conda:
+        "envs/base_python.yaml"
     log:
         "logs/barrnap/{sample}_filtered.log"    
     script:

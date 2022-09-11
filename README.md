@@ -139,4 +139,39 @@ O, using Conda:
 conda env create --name sm_wgs --file environment.yaml
 ```
 
-Make sure a proper Docker installation is available on your machine.
+## A few considerations for dealing with unexpected behavior
+
+Because of Snakemake's way of deciding whether a step needs to be rerun, you may encounter undesired behavior. For example, rerunning an entire pipeline after modifying a single parameter (which only affects one of the final steps), moving a directory or adding new reads.
+
+If this happens (it will be reflected when using `snakemake -n` to view the schedule), there are some useful flags. As a rule of thumb, the desired effect is achieved by taking only the file modification date into account:
+
+```bash
+snakemake -n --rerun-triggers mtime
+snakemake -c100 --rerun-triggers mtime
+```
+
+Another command of interest is `--touch`:
+
+> Touch output files (mark them up to date without really changing them) instead of running their commands. This is used to pretend that the rules were executed, in order to fool future invocations of snakemake. Note that this will only touch files that would otherwise be recreated by Snakemake (e.g. because their input files are newer). For enforcing a touch, combine this with `--force`, `--forceall`, or` --forcerun`. Note however that you loose the provenance information when the files have been created in realitiy. Hence, this should be used only as a last resort. (default: False) (note that you can touch individual files, obtaining the same effect).
+
+As a last resort, you can always delete the folder with the results of the step you want to rerun and then run Snakemake normally.
+
+## Tips to test different parameters
+
+It is very important to note that, if we are only interested in getting one file, we can tell Snakemake directly.
+
+For example, let's imagine that we want to rerun the 16s sequence fetch because, with the restrictions imposed, we have not obtained any sequence. To re-run the filtering step with a different minimum number of bp just for one file (without affecting other samples):
+
+```bash
+grep -c '>' results/barrnap/MST109_filtered_rrna.fa
+1 # Just one sequence
+
+snakemake -n results/barrnap/MST109_filtered_rrna.fa --rerun-triggers mtime
+Building DAG of jobs...
+Nothing to be done (all requested files are present and up to date). # Expected behavior
+
+rm results/barrnap/MST109_filtered_rrna.fa
+snakemake -c1 results/barrnap/MST109_filtered_rrna.fa --rerun-triggers mtime --config minumun_16s_allowed=0
+grep -c '>' results/barrnap/MST109_filtered_rrna.fa
+9
+```
