@@ -26,9 +26,31 @@ conda activate sm_wgs
 export NUMEXPR_MAX_THREADS=100
 ```
 
+## Quick start
+
+Just the most common commands you may be using all the time. Given that raw data are in the `reads` directory inside `IlluminaSnakemake`, run the following command to rename the files:
+
+```bash
+snakemake -c8 rename
+```
+
+Then, run the following to display what would be done (taking only the file modification date into account for deciding if a substep should be re-runned):
+
+```bash
+snakemake -n -rerun-triggers mtime
+```
+
+If it looks okay, just run it by specifying the maximum number of threads the pipeline can use (although single steps are forced to a maximum of 0.75 * `MAX_CORES`)
+
+```bash
+snakemake -c75 -rerun-triggers mtime
+```
+
+This will probably take a while. You may want to check the log files for each subprocess while are being written inside the `logs` directory. 
+
 ## Usage
 
-First of all, let's inspect the directory structure **before** you run snakemake, just after you clone this repository:
+First of all, let's inspect the directory structure **before** you run Snakemake, just after you clone this repository:
 
 ```bash
 $ tree -L 2
@@ -44,12 +66,12 @@ $ tree -L 2
     └── envs
 ```
 
-The script expects a directory named `reads` where the raw Illumina `fastq.gz` files should be moved into. Please check `config/README.md` for changing this default behavior. Files should be named as follows:
+The script expects a directory named `reads` where the raw Illumina `fastq.gz` files should be moved into. Please check [`config/README.md`](config/README.md) for changing this default behavior. Files should be named as follows:
+
+The first step is to rename the different files to just display the sample and the read. You can do this manually or run the following command. In case of renaming files manually, you should move them into the `results/renamed_raw_reads` (or edit the `config.yaml` file). 
 
 ```bash
-$ ls reads
-PHK1-MST102_S132_L001_R1_001.fastq.gz  PHK1-MST103_S131_L001_R1_001.fastq.gz
-PHK1-MST102_S132_L001_R2_001.fastq.gz  PHK1-MST103_S131_L001_R2_001.fastq.gz
+snakemake -c1 rename
 ```
 
 ### Running snakemake
@@ -69,10 +91,10 @@ snakemake -n --quiet
 Or a more detailed one, including files and the shell commands that will be executed (nice for debugging):
 
 ```bash
-snakemake -n -p
+snakemake -p -n
 ```
 
-In order to actually run the pipeline, you must indicate the number of maximum cores you want to dedicate to the pipeline:
+To run the pipeline, you must indicate the number of maximum cores you want to dedicate to the pipeline:
 
 ```bash
 snakemake -c 100
@@ -86,7 +108,7 @@ snakemake --dag | dot -Tsvg > docs/dag.svg
 
 ![DAG](docs/dag.svg)
 
-Let's inspect the directory structure **after** you run snakemake. You may be aware that new directories have been created (in addition to `reads`, where we moved the raw data files previously).
+Let's inspect the directory structure **after** you run Snakemake. You may be aware that new directories have been created (in addition to `reads`, where we moved the raw data files previously).
 
 ```bash
 tree -L 2
@@ -141,7 +163,7 @@ conda env create --name sm_wgs --file environment.yaml
 
 ## A few considerations for dealing with unexpected behavior
 
-Because of Snakemake's way of deciding whether a step needs to be rerun, you may encounter undesired behavior. For example, rerunning an entire pipeline after modifying a single parameter (which only affects one of the final steps), moving a directory or adding new reads.
+Because of Snakemake's way of deciding whether a step needs to be rerun, you may encounter undesired behavior. For example, rerunning an entire pipeline after modifying a single parameter (which only affects one of the final steps), moving a directory, or adding new reads.
 
 If this happens (it will be reflected when using `snakemake -n` to view the schedule), there are some useful flags. As a rule of thumb, the desired effect is achieved by taking only the file modification date into account:
 
@@ -176,7 +198,7 @@ grep -c '>' results/barrnap/MST109_filtered_rrna.fa
 9
 ```
 
-Another very useful tool is `--summary`, which prints a table associating each output file with the rule used to generate it, the creation date and, optionally, the version of the tool used for creation. This flag, in addition to grep, can be very useful for checking the status of files. 
+Another very useful tool is `--summary`, which prints a table associating each output file with the rule used to generate it, the creation date, and, optionally, the version of the tool used for creation. This flag, in addition, to grep, can be very useful for checking the status of files. 
 
 ```bash
 snakemake --summary --rerun-triggers mtime | grep 'contigs.fasta'
