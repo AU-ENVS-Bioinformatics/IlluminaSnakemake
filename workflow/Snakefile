@@ -29,12 +29,6 @@ regex_raw_illumina_files = f"{DEFAULT_SOURCE_FILEPATH}{{name}}-{{sample}}_{{numb
 rule all:
     input:
         expand(
-            f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz",
-            zip,
-            sample = sample,
-            read = read,
-        ),
-        expand(
             f"{DEFAULT_DEST_FILEPATH}{FASTQC_FILEPATH}{{sample}}_R1.html",
             sample=sample,
         ),
@@ -63,7 +57,7 @@ rule all:
             f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.gff", sample = sample
         )
 
-rule renaming_files:
+rule rename:
     params:
         inputdir = f"{DEFAULT_SOURCE_FILEPATH}",
         outdir = f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}",
@@ -84,7 +78,7 @@ rule renaming_files:
 trim_galore_params = config.get("trim_galore", "")
 trim_galore_params.append(f'--cores {AVAILABLE_THREADS}')
 
-rule trim_paired_end_reads:
+rule trim_galore:
     input:
         [
             f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_R1.fastq.gz",
@@ -105,7 +99,7 @@ rule trim_paired_end_reads:
         "v1.12.1/bio/trim_galore/pe"
 
 
-rule generate_fastq_qc_statistics:
+rule fastq_qc:
     input:
         f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R{{read_n}}_val_{{read_n}}.fq.gz",
     output:
@@ -122,7 +116,7 @@ rule generate_fastq_qc_statistics:
         "v1.12.1/bio/fastqc"
 
 
-rule assembling_genome:
+rule spades:
     input:
         R1=f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1_val_1.fq.gz",
         R2=f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2_val_2.fq.gz",
@@ -145,7 +139,7 @@ rule assembling_genome:
         "&& mv {output.outdir}/contigs.fasta {output.contigs} "
 
 
-rule generate_quality_assessment_genome_assemblies:
+rule quast:
     input:
         fasta=f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta",
         R1=f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1_val_1.fq.gz",
@@ -169,7 +163,7 @@ rule generate_quality_assessment_genome_assemblies:
         ">> {log} 2>&1 "
 
 
-rule annotate_bacterial_genome:
+rule prokka:
     input:
         f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta",
     output:
@@ -187,7 +181,7 @@ rule annotate_bacterial_genome:
         "--prefix {wildcards.sample} --locustag {wildcards.sample} "
         "{input} >> {log} 2>&1"
 
-rule run_busco_prok:
+rule busco:
     input:
         f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta",
     output:
@@ -203,7 +197,7 @@ rule run_busco_prok:
     wrapper:
         "v1.12.2/bio/busco" 
 
-rule finding_16s:
+rule barrnap:
     input:
         f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta",
     output:
@@ -216,7 +210,7 @@ rule finding_16s:
     shell:
         "barrnap -o {output.fasta} < {input} > {output.gff} "
         "2> {log}"
-rule filtering_16s:
+rule find_16s:
     input:
         fasta = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_rrna.fa",
         gff = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_rrna.gff",

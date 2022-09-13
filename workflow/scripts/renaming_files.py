@@ -17,5 +17,8 @@ for file in os.listdir(input_dir):
         print(original)
         target = output_dir + match.group(1) + "_" + match.group(2) + ".fastq.gz"
         print(target)
-        copy_file (original, target)
+        if os.path.exists(target):
+            print('The previous file was already there.')
+        else:
+            copy_file (original, target)
   
