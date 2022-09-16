@@ -68,6 +68,8 @@ $ tree -L 2
 
 The script expects a directory named `reads` where the raw Illumina `fastq.gz` files should be moved into. Please check [`config/README.md`](config/README.md) for changing this default behavior. Files should be named as follows:
 
+### Renaming files
+
 The first step is to rename the different files to just display the sample and the read. You can do this manually or run the following command. In case of renaming files manually, you should move them into the `results/renamed_raw_reads` (or edit the `config.yaml` file). 
 
 ```bash
@@ -137,6 +139,53 @@ tree -L 2
 └── workflow
     ├── Snakefile
     └── envs
+```
+
+### Comparing genomes
+
+To compare genomes, you can use the `compare` rule. This rule uses dRep and checkM to compare different genomes. You can configure this tool in the config.yaml file (see [`config/README.md`](config/README.md) ). 
+
+There are 2 modes: by default, all samples are compared. 
+
+```bash
+snakemake -c50 compare
+```
+However, it may be useful to compare only a number of genomes with each other. In this case, the pipeline expects a file with as many lines as files and their respective addresses. For example, 
+
+```bash
+cat subsample1.txt 
+results/spades/MST103_spades/MST103_contigs.fasta
+results/spades/MST104_spades/MST104_contigs.fasta
+results/spades/MST102_spades/MST102_contigs.fasta
+```
+Then, you need to indicate the file you are going to use (you can also do it by editing  [`config/config.yaml`](config/config.yaml))
+
+```bash
+snakemake -c50 compare --config SAMPLES_TO_COMPARE_FILEPATH="subsample1.txt"
+```
+
+Let's see the file structure resulting from running `compare` with all the files and with a subsample
+
+``` bash
+results/dRep/
+├── all
+│   ├── data
+│   │   ├── Clustering_files
+│   │   ├── MASH_files
+│   │   └── fastANI_files
+│   ├── data_tables
+│   ├── dereplicated_genomes
+│   ├── figures
+│   └── log
+└── subsample1
+    ├── data
+    │   ├── Clustering_files
+    │   ├── MASH_files
+    │   └── fastANI_files
+    ├── data_tables
+    ├── dereplicated_genomes
+    ├── figures
+    └── log
 ```
 
 ## Custom installation

@@ -12,7 +12,11 @@ QUAST_FILEPATH = config.get("QUAST_FILEPATH", "quast/")
 PROKKA_FILEPATH = config.get("PROKKA_FILEPATH", "prokka/")
 BUSCO_FILEPATH = config.get("BUSCO_FILEPATH", "busco/")
 BARRNAP_FILEPATH = config.get("BARRNAP_FILEPATH", "barrnap/")
+SAMPLES_TO_COMPARE_FILEPATH = config.get("SAMPLES_TO_COMPARE_FILEPATH", "")
+DREP_FILEPATH = config.get("DREP_FILEPATH", "dRep/")
+CHECKM_FILEPATH = config.get("CHECKM_FILEPATH", "checkM/")
 AVAILABLE_THREADS = int(workflow.cores * 0.75)
+
 
 # Searching for Illumina files
 regex_raw_illumina_files = f"{DEFAULT_SOURCE_FILEPATH}{{name}}-{{sample}}_{{number}}_{{lane}}_{{read}}_{{segment}}.fastq.gz"
@@ -210,6 +214,7 @@ rule barrnap:
     shell:
         "barrnap -o {output.fasta} < {input} > {output.gff} "
         "2> {log}"
+
 rule find_16s:
     input:
         fasta = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_rrna.fa",
@@ -225,3 +230,69 @@ rule find_16s:
         "logs/barrnap/{sample}_filtered.log"    
     script:
         "scripts/filter_16S_from_barrnap.py"
+
+import os
+import re
+from pathlib import Path
+def get_files_to_compare():
+    if os.path.isfile(SAMPLES_TO_COMPARE_FILEPATH):
+        with open(SAMPLES_TO_COMPARE_FILEPATH) as f:
+            return f.read().splitlines()
+    else:
+        root_dir = f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}"
+        samples = [re.sub("_spades$", "", file) for file in os.listdir(root_dir) if "spades" in file]
+        genomes = [f"{root_dir}{sample}_spades/{sample}_contigs.fasta" for sample in samples]
+        return [genome for genome in genomes if os.path.isfile(genome)]
+
+if SAMPLES_TO_COMPARE_FILEPATH == "":
+    COMPARE_DIR = "all"
+else: 
+    COMPARE_DIR = Path(SAMPLES_TO_COMPARE_FILEPATH).stem
+
+FILES2COMPARE = get_files_to_compare()
+
+rule compare:
+    input: 
+        f"{DEFAULT_DEST_FILEPATH}{DREP_FILEPATH}{COMPARE_DIR}",
+        f"{DEFAULT_DEST_FILEPATH}{CHECKM_FILEPATH}{COMPARE_DIR}"
+
+rule dRep:
+    input: FILES2COMPARE,
+    log: 
+        f"logs/compare/dRep_{COMPARE_DIR}",
+    conda:
+        "envs/compare.yaml",
+    output:
+        dRep = directory(f"{DEFAULT_DEST_FILEPATH}{DREP_FILEPATH}{COMPARE_DIR}"),
+    params:
+        extra=" ".join(config.get("dRep", "")),
+    threads: AVAILABLE_THREADS,
+    shell:
+        "dRep compare  {output} "
+        "{params.extra} "
+        "-p {threads} "
+        "-g {input} "
+        ">> {log} 2>&1 "
+
+rule checkM:
+    input: FILES2COMPARE,
+    log: 
+        f"logs/compare/checkM_{COMPARE_DIR}",
+    conda:
+        "envs/compare.yaml",
+    output:
+        tmp = directory(f"{DEFAULT_DEST_FILEPATH}{CHECKM_FILEPATH}{COMPARE_DIR}_tmp"),
+        checkM = directory(f"{DEFAULT_DEST_FILEPATH}{CHECKM_FILEPATH}{COMPARE_DIR}")
+    params:
+        extra=" ".join(config.get("checkM", "")),
+    threads: AVAILABLE_THREADS,
+    shell:
+        "mkdir -p {output.tmp} && "
+        "cp {input} {output.tmp} && "
+        "checkm lineage_wf {output.tmp} {output.checkM} "
+        "{params.extra} "
+        "fasta "
+        "-t {threads} "
+        ">> {log} 2>&1 "
+
+
