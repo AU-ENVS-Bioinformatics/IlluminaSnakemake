@@ -4,10 +4,7 @@ from pathlib import Path
 
 # Reading configuration file
 configfile: "config/config.yaml"
-# Python helper functions
-include: "rules/common.smk"  
-
-DEFAULT_SOURCE_FILEPATH = config.get("DEFAULT_SOURCE_FILEPATH", "reads/")
+DEFAULT_DEST_FILEPATH = config.get("DEFAULT_DEST_FILEPATH", "results/")
 DEFAULT_DEST_FILEPATH = config.get("DEFAULT_DEST_FILEPATH", "results/")
 RENAMED_READS_FILEPATH = config.get("RENAMED_READS_FILEPATH", "renamed_raw_reads/")
 TRIMMED_READS_FILEPATH = config.get("TRIMMED_READS_FILEPATH", "trimmed/")
@@ -17,24 +14,24 @@ QUAST_FILEPATH = config.get("QUAST_FILEPATH", "quast/")
 PROKKA_FILEPATH = config.get("PROKKA_FILEPATH", "prokka/")
 BUSCO_FILEPATH = config.get("BUSCO_FILEPATH", "busco/")
 BARRNAP_FILEPATH = config.get("BARRNAP_FILEPATH", "barrnap/")
-SAMPLES_TO_COMPARE_FILEPATH = config.get("SAMPLES_TO_COMPARE_FILEPATH", "")
-DREP_FILEPATH = config.get("DREP_FILEPATH", "dRep/")
-CHECKM_FILEPATH = config.get("CHECKM_FILEPATH", "checkM/")
 AVAILABLE_THREADS = int(workflow.cores * 0.75)
-
-
 # Searching for Illumina files
-regex_raw_illumina_files = f"{DEFAULT_SOURCE_FILEPATH}{{name}}-{{sample}}_{{number}}_{{lane}}_{{read}}_{{segment}}.fastq.gz"
-(
-    name,
-    sample,
-    number,
-    lane,
-    read,
-    segment,
-) = glob_wildcards(regex_raw_illumina_files)
-
-
+regex_raw_illumina_files = f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz"
+sample, read = glob_wildcards(regex_raw_illumina_files)
+# Python helper functions
+include: "rules/common.smk"  
+# Rules
+include: "rules/rename.smk"  
+include: "rules/trim_galore.smk"  
+include: "rules/fastq_qc.smk"  
+include: "rules/spades.smk"  
+include: "rules/quast.smk"  
+include: "rules/prokka.smk"
+include: "rules/busco.smk"
+include: "rules/barrnap.smk"
+include: "rules/find_16s.smk"
+include: "rules/compare.smk"
+# Rule all
 rule all:
     input:
         expand(
@@ -65,223 +62,3 @@ rule all:
         expand(
             f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.gff", sample = sample
         )
-
-rule rename:
-    output:
-        expand(
-            f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz",
-            zip,
-            sample = sample,
-            read = read,
-        ),
-    log:
-        "logs/renaming_files/{wildcards.sample}_{wildcards.sample}.log",
-    conda:
-        "envs/base_python.yaml"
-    script:
-        "scripts/renaming_files.py"
-
-trim_galore_params = config.get("trim_galore", "")
-trim_galore_params.append(f'--cores {AVAILABLE_THREADS}')
-
-rule trim_galore:
-    input:
-        [
-            f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_R1.fastq.gz",
-            f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_R2.fastq.gz",
-        ],
-    output:
-        f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1_val_1.fq.gz",
-        f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1.fastq.gz_trimming_report.txt",
-        f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2_val_2.fq.gz",
-        f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2.fastq.gz_trimming_report.txt",
-    params:
-        extra=" ".join(trim_galore_params),        
-    log:
-        "logs/trim_galore/{sample}.log",
-    conda:
-        "envs/trim_paired_end_reads.yaml"
-    wrapper:
-        "v1.12.1/bio/trim_galore/pe"
-
-
-rule fastq_qc:
-    input:
-        f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R{{read_n}}_val_{{read_n}}.fq.gz",
-    output:
-        html=f"{DEFAULT_DEST_FILEPATH}{FASTQC_FILEPATH}{{sample}}_R{{read_n}}.html",
-        zip=f"{DEFAULT_DEST_FILEPATH}{FASTQC_FILEPATH}{{sample}}_R{{read_n}}_fastqc.zip",
-    params:
-        extra=" ".join(config.get("fastqc", "")),
-    log:
-        "logs/fastqc/{sample}_R{read_n}.log",
-    conda:
-        "envs/generate_fastq_qc_statistics.yaml"
-    threads: AVAILABLE_THREADS
-    wrapper:
-        "v1.12.1/bio/fastqc"
-
-
-rule spades:
-    input:
-        R1=f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1_val_1.fq.gz",
-        R2=f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2_val_2.fq.gz",
-    output:
-        outdir=directory(f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades"),
-        contigs=f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
-    params:
-        extra=" ".join(config.get("spades", "")),
-    log:
-        "logs/spades/{sample}.log",
-    conda:
-        "envs/assembling_genome.yaml"
-    threads: AVAILABLE_THREADS
-    shell:
-        "spades.py {params.extra} "
-        "--threads {threads} "
-        "-o {output.outdir} "
-        "-1 {input.R1} -2 {input.R2} "
-        ">> {log} 2>&1 "
-        "&& mv {output.outdir}/contigs.fasta {output.contigs} "
-
-
-rule quast:
-    input:
-        fasta=f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
-        R1=f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1_val_1.fq.gz",
-        R2=f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2_val_2.fq.gz",
-    output:
-        outdir=directory(f"{DEFAULT_DEST_FILEPATH}{QUAST_FILEPATH}{{sample}}"),
-        report=f"{DEFAULT_DEST_FILEPATH}{QUAST_FILEPATH}{{sample}}/report.tsv",
-    log:
-        "logs/quast/{sample}.log",
-    conda:
-        "envs/generate_quality_assessment_genome_assemblies.yaml"
-    params:
-        extra=" ".join(config.get("quast", "")),
-    threads: AVAILABLE_THREADS
-    shell:
-        "quast {params.extra} "
-        "--threads {threads} "
-        "--pe1 {input.R1} --pe2 {input.R2} "
-        "-o {output.outdir} "
-        "{input.fasta} "
-        ">> {log} 2>&1 "
-
-
-rule prokka:
-    input:
-        f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
-    output:
-        directory(f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka"),
-    log:
-        "logs/prokka/{sample}.log",
-    conda:
-        "envs/annotate_bacterial_genome.yaml"
-    params:
-        extra=" ".join(config.get("prokka", "")),
-    threads: AVAILABLE_THREADS
-    shell:
-        "prokka --outdir {output} {params.extra} "
-        "--cpus {threads} "
-        "--prefix {wildcards.sample} --locustag {wildcards.sample} "
-        "{input} >> {log} 2>&1"
-
-rule busco:
-    input:
-        f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
-    output:
-        out_dir=directory(f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}/txome_busco/prok"),
-        dataset_dir=directory(f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}/resources/busco_downloads"),
-    log:
-        "logs/busco/{sample}.log",
-    params:
-        mode="genome",
-        # optional parameters
-        extra=" ".join(config.get("busco", "")),
-    threads: AVAILABLE_THREADS
-    wrapper:
-        "v1.12.2/bio/busco" 
-
-rule barrnap:
-    input:
-        f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
-    output:
-        fasta = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_rrna.fa",
-        gff = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_rrna.gff",
-    log:
-        "logs/barrnap/{sample}.log",
-    conda:
-        "envs/annotate_bacterial_genome.yaml"
-    shell:
-        "barrnap -o {output.fasta} < {input} > {output.gff} "
-        "2> {log}"
-
-rule find_16s:
-    input:
-        fasta = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_rrna.fa",
-        gff = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_rrna.gff",
-    output:
-        fasta = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.fa",
-        gff = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.gff",
-    params:
-        config.get("minumun_16s_allowed", 900)
-    conda:
-        "envs/base_python.yaml"
-    log:
-        "logs/barrnap/{sample}_filtered.log"    
-    script:
-        "scripts/filter_16S_from_barrnap.py"
-
-if SAMPLES_TO_COMPARE_FILEPATH == "":
-    COMPARE_DIR = "all"
-else: 
-    COMPARE_DIR = Path(SAMPLES_TO_COMPARE_FILEPATH).stem
-
-FILES2COMPARE = get_files_to_compare()
-
-rule compare:
-    input: 
-        f"{DEFAULT_DEST_FILEPATH}{DREP_FILEPATH}{COMPARE_DIR}",
-        f"{DEFAULT_DEST_FILEPATH}{CHECKM_FILEPATH}{COMPARE_DIR}"
-
-rule dRep:
-    input: FILES2COMPARE,
-    log: 
-        f"logs/compare/dRep_{COMPARE_DIR}",
-    conda:
-        "envs/compare.yaml",
-    output:
-        dRep = directory(f"{DEFAULT_DEST_FILEPATH}{DREP_FILEPATH}{COMPARE_DIR}"),
-    params:
-        extra=" ".join(config.get("dRep", "")),
-    threads: AVAILABLE_THREADS,
-    shell:
-        "dRep compare  {output} "
-        "{params.extra} "
-        "-p {threads} "
-        "-g {input} "
-        ">> {log} 2>&1 "
-
-rule checkM:
-    input: FILES2COMPARE,
-    log: 
-        f"logs/compare/checkM_{COMPARE_DIR}",
-    conda:
-        "envs/compare.yaml",
-    output:
-        tmp = directory(f"{DEFAULT_DEST_FILEPATH}{CHECKM_FILEPATH}{COMPARE_DIR}_tmp"),
-        checkM = directory(f"{DEFAULT_DEST_FILEPATH}{CHECKM_FILEPATH}{COMPARE_DIR}")
-    params:
-        extra=" ".join(config.get("checkM", "")),
-    threads: AVAILABLE_THREADS,
-    shell:
-        "mkdir -p {output.tmp} && "
-        "cp {input} {output.tmp} && "
-        "checkm lineage_wf {output.tmp} {output.checkM} "
-        "{params.extra} "
-        "fasta "
-        "-t {threads} "
-        ">> {log} 2>&1 "
-
-
