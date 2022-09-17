@@ -1,6 +1,11 @@
+import os
+import re
+from pathlib import Path
+
 # Reading configuration file
 configfile: "config/config.yaml"
-
+# Python helper functions
+include: "rules/common.smk"  
 
 DEFAULT_SOURCE_FILEPATH = config.get("DEFAULT_SOURCE_FILEPATH", "reads/")
 DEFAULT_DEST_FILEPATH = config.get("DEFAULT_DEST_FILEPATH", "results/")
@@ -41,7 +46,7 @@ rule all:
             sample=sample,
         ),
         expand(
-            f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta",
+            f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
             sample=sample,
         ),
         expand(
@@ -62,9 +67,6 @@ rule all:
         )
 
 rule rename:
-    params:
-        inputdir = f"{DEFAULT_SOURCE_FILEPATH}",
-        outdir = f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}",
     output:
         expand(
             f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz",
@@ -126,7 +128,7 @@ rule spades:
         R2=f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2_val_2.fq.gz",
     output:
         outdir=directory(f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades"),
-        contigs=f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta",
+        contigs=f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
     params:
         extra=" ".join(config.get("spades", "")),
     log:
@@ -145,7 +147,7 @@ rule spades:
 
 rule quast:
     input:
-        fasta=f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta",
+        fasta=f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
         R1=f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1_val_1.fq.gz",
         R2=f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2_val_2.fq.gz",
     output:
@@ -169,7 +171,7 @@ rule quast:
 
 rule prokka:
     input:
-        f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta",
+        f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
     output:
         directory(f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka"),
     log:
@@ -187,7 +189,7 @@ rule prokka:
 
 rule busco:
     input:
-        f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta",
+        f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
     output:
         out_dir=directory(f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}/txome_busco/prok"),
         dataset_dir=directory(f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}/resources/busco_downloads"),
@@ -203,7 +205,7 @@ rule busco:
 
 rule barrnap:
     input:
-        f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}_contigs.fasta",
+        f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
     output:
         fasta = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_rrna.fa",
         gff = f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_rrna.gff",
@@ -230,19 +232,6 @@ rule find_16s:
         "logs/barrnap/{sample}_filtered.log"    
     script:
         "scripts/filter_16S_from_barrnap.py"
-
-import os
-import re
-from pathlib import Path
-def get_files_to_compare():
-    if os.path.isfile(SAMPLES_TO_COMPARE_FILEPATH):
-        with open(SAMPLES_TO_COMPARE_FILEPATH) as f:
-            return f.read().splitlines()
-    else:
-        root_dir = f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}"
-        samples = [re.sub("_spades$", "", file) for file in os.listdir(root_dir) if "spades" in file]
-        genomes = [f"{root_dir}{sample}_spades/{sample}_contigs.fasta" for sample in samples]
-        return [genome for genome in genomes if os.path.isfile(genome)]
 
 if SAMPLES_TO_COMPARE_FILEPATH == "":
     COMPARE_DIR = "all"

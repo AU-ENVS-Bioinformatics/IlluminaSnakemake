@@ -2,9 +2,14 @@ import os
 import shutil
 import re
 
+DEFAULT_SOURCE_FILEPATH = snakemake.config.get("DEFAULT_SOURCE_FILEPATH", "reads/")
+DEFAULT_DEST_FILEPATH =snakemake.config.get("DEFAULT_DEST_FILEPATH", "results/")
+RENAMED_READS_FILEPATH = snakemake.config.get("RENAMED_READS_FILEPATH", "renamed_raw_reads/")
+
 regular_expression = ".+-(.+)_.+_.+_(.+)_.+\.fastq.gz"
-input_dir = snakemake.params[0]
-output_dir = snakemake.params[1]
+
+input_dir = DEFAULT_SOURCE_FILEPATH
+output_dir = f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}"
 
 def copy_file(original: str, target: str) -> None:
     os.makedirs(os.path.dirname(target), exist_ok=True)
