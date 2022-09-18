@@ -8,6 +8,10 @@ QUAST_FILEPATH: "quast/"
 PROKKA_FILEPATH: "prokka/"
 BUSCO_FILEPATH: "busco/"
 BARRNAP_FILEPATH: "barrnap/"
+SAMPLES_TO_COMPARE_FILEPATH: ""
+DREP_FILEPATH: "dRep/"
+CHECKM_FILEPATH: "checkM/"
+
 
 trim_galore:
   - "--length 60" #Discard reads that became shorter than INT because of either quality or adapter trimming
@@ -26,9 +30,16 @@ prokka:
   # Don't use --prefix
 
 busco:
-  - "--auto-lineage"
+  - "-l bacteria_odb10"
 
 barrnap:
   - "--kingdom bac" # from bac euk mito arc (default 'bac')
 
 minumun_16s_allowed: 900
+
+dRep:
+  - "-pa 0.90" #ANI threshold to form primary (MASH) clusters
+# Don't use -p (threads) or '-g' (genomes or `compare`)
+
+checkM:
+  -  "--nt -x" 
