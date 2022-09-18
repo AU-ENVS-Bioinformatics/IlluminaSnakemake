@@ -2,8 +2,11 @@ import os
 import re
 from pathlib import Path
 
+
 # Reading configuration file
 configfile: "config/config.yaml"
+
+
 DEFAULT_DEST_FILEPATH = config.get("DEFAULT_DEST_FILEPATH", "results/")
 DEFAULT_DEST_FILEPATH = config.get("DEFAULT_DEST_FILEPATH", "results/")
 RENAMED_READS_FILEPATH = config.get("RENAMED_READS_FILEPATH", "renamed_raw_reads/")
@@ -16,21 +19,27 @@ BUSCO_FILEPATH = config.get("BUSCO_FILEPATH", "busco/")
 BARRNAP_FILEPATH = config.get("BARRNAP_FILEPATH", "barrnap/")
 AVAILABLE_THREADS = int(workflow.cores * 0.75)
 # Searching for Illumina files
-regex_raw_illumina_files = f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz"
+regex_raw_illumina_files = (
+    f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz"
+)
 sample, read = glob_wildcards(regex_raw_illumina_files)
+
+
 # Python helper functions
-include: "rules/common.smk"  
+include: "rules/common.smk"
 # Rules
-include: "rules/rename.smk"  
-include: "rules/trim_galore.smk"  
-include: "rules/fastq_qc.smk"  
-include: "rules/spades.smk"  
-include: "rules/quast.smk"  
+include: "rules/rename.smk"
+include: "rules/trim_galore.smk"
+include: "rules/fastq_qc.smk"
+include: "rules/spades.smk"
+include: "rules/quast.smk"
 include: "rules/prokka.smk"
 include: "rules/busco.smk"
 include: "rules/barrnap.smk"
 include: "rules/find_16s.smk"
 include: "rules/compare.smk"
+
+
 # Rule all
 rule all:
     input:
@@ -53,12 +62,12 @@ rule all:
         expand(
             f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka", sample=sample
         ),
+        expand(f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}", sample=sample),
         expand(
-            f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}", sample = sample
+            f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.fa",
+            sample=sample,
         ),
         expand(
-            f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.fa", sample = sample
+            f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.gff",
+            sample=sample,
         ),
-        expand(
-            f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.gff", sample = sample
-        )
