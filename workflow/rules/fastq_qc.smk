@@ -3,6 +3,7 @@ TRIMMED_READS_FILEPATH = config.get("TRIMMED_READS_FILEPATH", "trimmed/")
 FASTQC_FILEPATH = config.get("FASTQC_FILEPATH", "allfastqc/")
 AVAILABLE_THREADS = int(workflow.cores * 0.75)
 
+
 rule fastq_qc:
     input:
         f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R{{read_n}}_val_{{read_n}}.fq.gz",

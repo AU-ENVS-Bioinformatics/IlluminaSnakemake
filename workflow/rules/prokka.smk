@@ -3,6 +3,7 @@ SPADES_FILEPATH = config.get("SPADES_FILEPATH", "spades/")
 PROKKA_FILEPATH = config.get("PROKKA_FILEPATH", "prokka/")
 AVAILABLE_THREADS = int(workflow.cores * 0.75)
 
+
 rule prokka:
     input:
         f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",

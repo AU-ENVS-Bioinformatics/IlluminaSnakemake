@@ -8,16 +8,16 @@ rule busco:
     input:
         f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
     output:
-        out_dir= directory(f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}"),
+        out_dir=directory(f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}"),
     log:
         "logs/busco/{sample}.log",
     params:
         extra=" ".join(config.get("busco", "")),
-        download_path = f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}busco_downloads"
-    conda: 
+        download_path=f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}busco_downloads",
+    conda:
         "../envs/busco.yaml"
     threads: AVAILABLE_THREADS
-    shell: 
+    shell:
         "busco -i {input} "
         "-o {output.out_dir} "
         "-m genome "

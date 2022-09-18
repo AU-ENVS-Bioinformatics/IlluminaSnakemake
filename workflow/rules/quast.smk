@@ -3,6 +3,8 @@ TRIMMED_READS_FILEPATH = config.get("TRIMMED_READS_FILEPATH", "trimmed/")
 SPADES_FILEPATH = config.get("SPADES_FILEPATH", "spades/")
 QUAST_FILEPATH = config.get("QUAST_FILEPATH", "quast/")
 AVAILABLE_THREADS = int(workflow.cores * 0.75)
+
+
 rule quast:
     input:
         fasta=f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",

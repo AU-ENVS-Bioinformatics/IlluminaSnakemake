@@ -3,8 +3,8 @@ rule rename:
         expand(
             f"{DEFAULT_DEST_FILEPATH}{RENAMED_READS_FILEPATH}{{sample}}_{{read}}.fastq.gz",
             zip,
-            sample = sample,
-            read = read,
+            sample=sample,
+            read=read,
         ),
     log:
         "logs/renaming_files/{wildcards.sample}_{wildcards.sample}.log",
