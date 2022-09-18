@@ -54,7 +54,7 @@ rule all:
             f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka", sample=sample
         ),
         expand(
-            f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}/txome_busco/prok", sample = sample
+            f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}", sample = sample
         ),
         expand(
             f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.fa", sample = sample

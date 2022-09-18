@@ -30,7 +30,7 @@ prokka:
   # Don't use --prefix
 
 busco:
-  - "--auto-lineage"
+  - "-l bacteria_odb10"
 
 barrnap:
   - "--kingdom bac" # from bac euk mito arc (default 'bac')
