@@ -18,7 +18,5 @@ rule trim_galore:
         extra=" ".join(trim_galore_params),        
     log:
         "logs/trim_galore/{sample}.log",
-    conda:
-        "../envs/trim_paired_end_reads.yaml"
     wrapper:
         "v1.12.1/bio/trim_galore/pe"

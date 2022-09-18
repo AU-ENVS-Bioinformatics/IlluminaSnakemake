@@ -9,14 +9,14 @@ rule spades:
         R1=f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1_val_1.fq.gz",
         R2=f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2_val_2.fq.gz",
     output:
-        outdir=directory(f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades"),
-        contigs=f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
+        outdir= directory(f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades"),
+        contigs= protected(f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta"),
     params:
         extra=" ".join(config.get("spades", "")),
     log:
         "logs/spades/{sample}.log",
     conda:
-        "..envs/assembling_genome.yaml"
+        "../envs/assembling_genome.yaml"
     threads: AVAILABLE_THREADS
     shell:
         "spades.py {params.extra} "

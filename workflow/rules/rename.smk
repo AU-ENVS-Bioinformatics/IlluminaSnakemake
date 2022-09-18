@@ -11,4 +11,4 @@ rule rename:
     conda:
         "../envs/base_python.yaml"
     script:
-        "scripts/renaming_files.py"
+        "../scripts/renaming_files.py"

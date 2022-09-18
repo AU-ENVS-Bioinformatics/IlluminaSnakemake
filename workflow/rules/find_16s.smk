@@ -15,4 +15,4 @@ rule find_16s:
     log:
         "logs/barrnap/{sample}_filtered.log"    
     script:
-        "scripts/filter_16S_from_barrnap.py"
+        "../scripts/filter_16S_from_barrnap.py"
