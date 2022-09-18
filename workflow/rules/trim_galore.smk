@@ -1,7 +1,8 @@
 RENAMED_READS_FILEPATH = config.get("RENAMED_READS_FILEPATH", "renamed_raw_reads/")
 TRIMMED_READS_FILEPATH = config.get("TRIMMED_READS_FILEPATH", "trimmed/")
 trim_galore_params = config.get("trim_galore", "")
-trim_galore_params.append(f'--cores {AVAILABLE_THREADS}')
+trim_galore_threads = min(AVAILABLE_THREADS, 8)
+trim_galore_params.append(f'--cores {trim_galore_threads}')
 
 rule trim_galore:
     input:
