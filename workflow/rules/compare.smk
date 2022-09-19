@@ -31,7 +31,7 @@ rule dRep:
         fig2=report(
             f"{DEFAULT_DEST_FILEPATH}{DREP_FILEPATH}{COMPARE_DIR}/figures/Primary_clustering_dendrogram.pdf",
             caption="report/dRep_Primary_clustering_dendrogram.rst",
-            category="dReComparing genomesp",
+            category="Comparing genomesp",
             subcategory="{wildcards.COMPARE_DIR}",
         ),
         fig3=report(
