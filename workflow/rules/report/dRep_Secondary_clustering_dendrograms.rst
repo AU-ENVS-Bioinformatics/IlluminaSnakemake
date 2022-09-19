@@ -1,0 +1,5 @@
+This dendrogram summarizes the pair-wise distance between all organisms in each primary cluster, as determined by the secondary algorithm (gANI / ANIm). At the very top the primary cluster identity is shown, and information on the secondary clustering algorithm parameters are shown above the dendrogram itself. You can see in the above figure that this secondary clustering was performed with gANI, the minimum alignment coverage is 10%, and the hierarchical clustering method is average.
+
+The black dotted line shows the secondary clustering ANI. This value determines which genomes end up in the same secondary cluster, and thus are considered to be the “same”. In the above figure, two secondary cluster are formed. The “best” genome of each secondary cluster is marked with as asterisk.
+
+The red line shows the lowest ANI for a “self-vs-self” comparison of all genomes in the genome list. That is, when each genome in this primary cluster is compared to itself, the red line is the lowest ANI you get. This represents a “limit of detection” of sorts. gANI always results in 100% ANI when self-vs-self comparisons are performed, but ANIm does not.

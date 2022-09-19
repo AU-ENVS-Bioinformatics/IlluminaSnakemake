@@ -1,0 +1,3 @@
+The primary clustering dendrogram summarizes the pair-wise Mash distance between all genomes in the genome list.
+
+The dotted line provides a visualization of the primary ANI - the value which determines the creation of primary clusters. It is drawn in the above figure at 90% ANI (the default value). Based on the above figure you can see that two primary clusters were formed- one with genomes colored blue, and one red.The primary clustering dendrogram summarizes the pair-wise Mash distance between all genomes in the genome list.
