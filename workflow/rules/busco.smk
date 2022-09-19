@@ -9,6 +9,10 @@ rule busco:
         f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
     output:
         out_dir=directory(f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}"),
+        report = report(f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}/short_summary.{{sample}}.txt",
+                       caption="report/busco_short_summary.rst",
+                        category="busco",
+                        subcategory = "{sample}")
     log:
         "logs/busco/{sample}.log",
     params:
@@ -24,3 +28,5 @@ rule busco:
         "{params.extra} "
         "-c {threads} "
         ">> {log} 2>&1 "
+        "&& rename 's/short_summary.+\.txt/short_summary.{wildcards.sample}.txt/g' {output.out_dir}/*.txt "
+        "&& touch {output.report}"

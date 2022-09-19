@@ -1,0 +1,1 @@
+Contains a plain text summary of the results in BUSCO notation.
