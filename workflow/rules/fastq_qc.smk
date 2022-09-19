@@ -8,7 +8,12 @@ rule fastq_qc:
     input:
         f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R{{read_n}}_val_{{read_n}}.fq.gz",
     output:
-        html=f"{DEFAULT_DEST_FILEPATH}{FASTQC_FILEPATH}{{sample}}_R{{read_n}}.html",
+        html=report(
+            f"{DEFAULT_DEST_FILEPATH}{FASTQC_FILEPATH}{{sample}}_R{{read_n}}.html",
+            caption="report/fastq_qc_html.rst",
+            category="Quality Control and Trimming",
+            subcategory="{sample}",
+        ),
         zip=f"{DEFAULT_DEST_FILEPATH}{FASTQC_FILEPATH}{{sample}}_R{{read_n}}_fastqc.zip",
     params:
         extra=" ".join(config.get("fastqc", "")),

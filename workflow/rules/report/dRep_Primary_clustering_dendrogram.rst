@@ -1,3 +1,4 @@
-The primary clustering dendrogram summarizes the pair-wise Mash distance between all genomes in the genome list.
+dRep can rapidly and accurately compare a list of genomes in a pair-wise manner. This allows identification of groups of organisms that share similar DNA content in terms of Average Nucleotide Identity (ANI).
 
+The primary clustering dendrogram summarizes the pair-wise Mash distance between all genomes in the genome list.
 The dotted line provides a visualization of the primary ANI - the value which determines the creation of primary clusters. It is drawn in the above figure at 90% ANI (the default value). Based on the above figure you can see that two primary clusters were formed- one with genomes colored blue, and one red.The primary clustering dendrogram summarizes the pair-wise Mash distance between all genomes in the genome list.

@@ -1,0 +1,2 @@
+Barrnap predicts the location of ribosomal RNA genes in genomes. It supports bacteria (5S,23S,16S), archaea (5S,5.8S,23S,16S), metazoan mitochondria (12S,16S) and eukaryotes (5S,5.8S,28S,18S).
+This file contains all ribosomal RNA genes that were found in fasta format.

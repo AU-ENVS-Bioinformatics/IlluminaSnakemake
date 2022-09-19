@@ -8,7 +8,19 @@ rule prokka:
     input:
         f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
     output:
-        directory(f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka"),
+        out_dir=directory(f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka"),
+        txt=report(
+            f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka/{{sample}}.txt",
+            caption="report/prokka_text.rst",
+            category="Genome annotation",
+            subcategory="{sample}",
+        ),
+        tsv=report(
+            f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka/{{sample}}.tsv",
+            caption="report/prokka_tsv.rst",
+            category="Genome annotation",
+            subcategory="{sample}",
+        ),
     log:
         "logs/prokka/{sample}.log",
     conda:
@@ -17,7 +29,7 @@ rule prokka:
         extra=" ".join(config.get("prokka", "")),
     threads: AVAILABLE_THREADS
     shell:
-        "prokka --outdir {output} {params.extra} "
+        "prokka --outdir {output.out_dir} {params.extra} "
         "--cpus {threads} "
         "--prefix {wildcards.sample} --locustag {wildcards.sample} "
         "{input} >> {log} 2>&1"

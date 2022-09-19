@@ -13,9 +13,19 @@ rule trim_galore:
         ],
     output:
         f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1_val_1.fq.gz",
-        f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1.fastq.gz_trimming_report.txt",
+        report(
+            f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R1.fastq.gz_trimming_report.txt",
+            caption="report/trim_galore.rst",
+            category="Quality Control and Trimming",
+            subcategory="{sample}",
+        ),
         f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2_val_2.fq.gz",
-        f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2.fastq.gz_trimming_report.txt",
+        report(
+            f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2.fastq.gz_trimming_report.txt",
+            caption="report/trim_galore.rst",
+            category="Quality Control and Trimming",
+            subcategory="{sample}",
+        ),
     params:
         extra=" ".join(trim_galore_params),
     log:

@@ -22,21 +22,27 @@ rule dRep:
         "../envs/compare.yaml"
     output:
         dRep=directory(f"{DEFAULT_DEST_FILEPATH}{DREP_FILEPATH}{COMPARE_DIR}"),
-        fig1 = report(f"{DEFAULT_DEST_FILEPATH}{DREP_FILEPATH}{COMPARE_DIR}/figures/Clustering_scatterplots.pdf",
-                        caption="report/dRep_Clustering_scatterplots.rst",
-                        category="dRep",
-                        subcategory = "{wildcards.COMPARE_DIR}"),
-        fig2 = report(f"{DEFAULT_DEST_FILEPATH}{DREP_FILEPATH}{COMPARE_DIR}/figures/Primary_clustering_dendrogram.pdf",
-                        caption="report/dRep_Primary_clustering_dendrogram.rst",
-                        category="dRep",
-                        subcategory = "{wildcards.COMPARE_DIR}"),
-        fig3 = report(f"{DEFAULT_DEST_FILEPATH}{DREP_FILEPATH}{COMPARE_DIR}/figures/Secondary_clustering_dendrograms.pdf",
-                        caption="report/dRep_Secondary_clustering_dendrograms.rst",
-                        category="dRep",
-                        subcategory = "{wildcards.COMPARE_DIR}")
+        fig1=report(
+            f"{DEFAULT_DEST_FILEPATH}{DREP_FILEPATH}{COMPARE_DIR}/figures/Clustering_scatterplots.pdf",
+            caption="report/dRep_Clustering_scatterplots.rst",
+            category="Comparing genomes",
+            subcategory="{wildcards.COMPARE_DIR}",
+        ),
+        fig2=report(
+            f"{DEFAULT_DEST_FILEPATH}{DREP_FILEPATH}{COMPARE_DIR}/figures/Primary_clustering_dendrogram.pdf",
+            caption="report/dRep_Primary_clustering_dendrogram.rst",
+            category="dReComparing genomesp",
+            subcategory="{wildcards.COMPARE_DIR}",
+        ),
+        fig3=report(
+            f"{DEFAULT_DEST_FILEPATH}{DREP_FILEPATH}{COMPARE_DIR}/figures/Secondary_clustering_dendrograms.pdf",
+            caption="report/dRep_Secondary_clustering_dendrograms.rst",
+            category="Comparing genomes",
+            subcategory="{wildcards.COMPARE_DIR}",
+        ),
     params:
         extra=" ".join(config.get("dRep", "")),
-    threads: AVAILABLE_THREADS,
+    threads: AVAILABLE_THREADS
     shell:
         "dRep compare  {output} "
         "{params.extra} "
@@ -55,10 +61,12 @@ rule checkM:
     output:
         tmp=directory(f"{DEFAULT_DEST_FILEPATH}{CHECKM_FILEPATH}{COMPARE_DIR}_tmp"),
         checkM=directory(f"{DEFAULT_DEST_FILEPATH}{CHECKM_FILEPATH}{COMPARE_DIR}"),
-        tbl1 = report(f"{DEFAULT_DEST_FILEPATH}{CHECKM_FILEPATH}{COMPARE_DIR}/lineage.ms",
-                       caption="report/checkM_lineage.rst",
-                        category="checkM",
-                        subcategory = "{wildcards.COMPARE_DIR}")
+        tbl1=report(
+            f"{DEFAULT_DEST_FILEPATH}{CHECKM_FILEPATH}{COMPARE_DIR}/lineage.ms",
+            caption="report/checkM_lineage.rst",
+            category="Comparing genomes",
+            subcategory="{wildcards.COMPARE_DIR}",
+        ),
     params:
         extra=" ".join(config.get("checkM", "")),
     threads: AVAILABLE_THREADS

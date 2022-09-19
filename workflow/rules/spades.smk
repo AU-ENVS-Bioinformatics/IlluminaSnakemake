@@ -13,6 +13,12 @@ rule spades:
         contigs=protected(
             f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta"
         ),
+        report=report(
+            f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/params.txt",
+            caption="report/spades_params.rst",
+            category="Genome assembly",
+            subcategory="{sample}",
+        ),
     params:
         extra=" ".join(config.get("spades", "")),
     log:

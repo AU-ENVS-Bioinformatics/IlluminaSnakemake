@@ -56,7 +56,7 @@ rule all:
             sample=sample,
         ),
         expand(
-            f"{DEFAULT_DEST_FILEPATH}{QUAST_FILEPATH}{{sample}}/report.tsv",
+            f"{DEFAULT_DEST_FILEPATH}{QUAST_FILEPATH}{{sample}}/report.txt",
             sample=sample,
         ),
         expand(

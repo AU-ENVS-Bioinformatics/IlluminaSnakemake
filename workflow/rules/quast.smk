@@ -12,7 +12,18 @@ rule quast:
         R2=f"{DEFAULT_DEST_FILEPATH}{TRIMMED_READS_FILEPATH}{{sample}}_R2_val_2.fq.gz",
     output:
         outdir=directory(f"{DEFAULT_DEST_FILEPATH}{QUAST_FILEPATH}{{sample}}"),
-        report=f"{DEFAULT_DEST_FILEPATH}{QUAST_FILEPATH}{{sample}}/report.tsv",
+        report_txt=report(
+            f"{DEFAULT_DEST_FILEPATH}{QUAST_FILEPATH}{{sample}}/report.txt",
+            caption="report/quast_txt.rst",
+            category="Genome assembly",
+            subcategory="{sample}",
+        ),
+        report_html=report(
+            f"{DEFAULT_DEST_FILEPATH}{QUAST_FILEPATH}{{sample}}/report.html",
+            caption="report/quast_html.rst",
+            category="Genome assembly",
+            subcategory="{sample}",
+        ),
     log:
         "logs/quast/{sample}.log",
     conda:

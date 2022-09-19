@@ -9,10 +9,12 @@ rule busco:
         f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
     output:
         out_dir=directory(f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}"),
-        report = report(f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}/short_summary.{{sample}}.txt",
-                       caption="report/busco_short_summary.rst",
-                        category="busco",
-                        subcategory = "{sample}")
+        report=report(
+            f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}{{sample}}/short_summary.{{sample}}.txt",
+            caption="report/busco_short_summary.rst",
+            category="Genome assembly",
+            subcategory="{sample}",
+        ),
     log:
         "logs/busco/{sample}.log",
     params:
