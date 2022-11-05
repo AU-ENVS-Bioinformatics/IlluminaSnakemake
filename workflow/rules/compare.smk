@@ -44,7 +44,7 @@ rule dRep:
         extra=" ".join(config.get("dRep", "")),
     threads: AVAILABLE_THREADS
     shell:
-        "dRep compare  {output} "
+        "dRep compare  {output.dRep} "
         "{params.extra} "
         "-p {threads} "
         "-g {input} "
