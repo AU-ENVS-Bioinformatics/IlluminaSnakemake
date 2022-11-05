@@ -27,6 +27,7 @@ spades:
 
 prokka:
   - "--compliant" # Force Genbank/ENA/DDJB compliance
+  - "--force"
   # Don't use --prefix
 
 busco:
