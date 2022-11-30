@@ -217,8 +217,8 @@ Because of Snakemake's way of deciding whether a step needs to be rerun, you may
 If this happens (it will be reflected when using `snakemake -n` to view the schedule), there are some useful flags. As a rule of thumb, the desired effect is achieved by taking only the file modification date into account:
 
 ```bash
-snakemake -n --rerun-triggers mtime
-snakemake -c100 --rerun-triggers mtime
+snakemake -n -rerun-triggers mtime
+snakemake -c100 -rerun-triggers mtime
 ```
 
 Another command of interest is `--touch`:
@@ -237,12 +237,12 @@ For example, let's imagine that we want to rerun the 16s sequence fetch because,
 grep -c '>' results/barrnap/MST109_filtered_rrna.fa
 1 # Just one sequence
 
-snakemake -n results/barrnap/MST109_filtered_rrna.fa --rerun-triggers mtime
+snakemake -n results/barrnap/MST109_filtered_rrna.fa -rerun-triggers mtime
 Building DAG of jobs...
 Nothing to be done (all requested files are present and up to date). # Expected behavior
 
 rm results/barrnap/MST109_filtered_rrna.fa
-snakemake -c1 results/barrnap/MST109_filtered_rrna.fa --rerun-triggers mtime --config minumun_16s_allowed=0
+snakemake -c1 results/barrnap/MST109_filtered_rrna.fa -rerun-triggers mtime --config minumun_16s_allowed=0
 grep -c '>' results/barrnap/MST109_filtered_rrna.fa
 9
 ```
@@ -250,7 +250,7 @@ grep -c '>' results/barrnap/MST109_filtered_rrna.fa
 Another very useful tool is `--summary`, which prints a table associating each output file with the rule used to generate it, the creation date, and, optionally, the version of the tool used for creation. This flag, in addition, to grep, can be very useful for checking the status of files. 
 
 ```bash
-snakemake --summary --rerun-triggers mtime | grep 'contigs.fasta'
+snakemake --summary -rerun-triggers mtime | grep 'contigs.fasta'
     
 Building DAG of jobs...
 results/spades/MST103_spades/MST103_contigs.fasta       Sat Sep 10 10:44:32 2022        assembling_genome       -       logs/spades/MST103.log    ok      no update
