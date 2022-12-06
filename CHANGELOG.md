@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.0.1](https://www.github.com/currocam/IlluminaSnakemake/compare/v1.0.0...v1.0.1) (2022-12-06)
+
+
+### Bug Fixes
+
+* add force to prokka ([8e2094e](https://www.github.com/currocam/IlluminaSnakemake/commit/8e2094ea93f81e458f05c71dc8da5f1e3a02dae7))
+* add regex case ([0851759](https://www.github.com/currocam/IlluminaSnakemake/commit/0851759ab5c11ac616e09de7be013645077d9d1f))
+
 ## 1.0.0 (2022-10-24)
 
 
