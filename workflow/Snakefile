@@ -24,6 +24,8 @@ regex_raw_illumina_files = (
 )
 sample, read = glob_wildcards(regex_raw_illumina_files)
 
+shell.prefix("set -o pipefail; ")
+
 
 # Python helper functions
 include: "rules/common.smk"
