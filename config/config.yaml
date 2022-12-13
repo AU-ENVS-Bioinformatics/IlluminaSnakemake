@@ -11,6 +11,7 @@ BARRNAP_FILEPATH: "barrnap/"
 SAMPLES_TO_COMPARE_FILEPATH: ""
 DREP_FILEPATH: "dRep/"
 CHECKM_FILEPATH: "checkM/"
+ANTISMASH_FILEPATH: "antismash/"
 
 
 trim_galore:
@@ -45,3 +46,16 @@ dRep:
 
 checkM:
   -  "--nt -x" 
+
+antismash:
+  - "--cb-general" # Compare identified clusters against a database of antiSMASH-predicted clusters.
+  - "--cb-knownclusters" # Compare identified clusters against known gene clusters from the MIBiG database.
+  - "--cb-subclusters" # Compare identified clusters against known subclusters responsible for synthesising precursors.
+  - "--asf" # Run active site finder analysis.
+  - "--pfam2go" # Run Pfam to Gene Ontology mapping module.
+  - "--smcog-trees" # Generate phylogenetic trees of sec. met. cluster orthologous groups.
+  - "--genefinding-tool none" # Not run genefinding
+  - "--verbose" # Print verbose status information to stderr.
+  # No cores and logfile
+
+ANTISMASH-THREADS: 200

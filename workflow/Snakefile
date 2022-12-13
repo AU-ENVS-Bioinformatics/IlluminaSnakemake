@@ -17,6 +17,8 @@ QUAST_FILEPATH = config.get("QUAST_FILEPATH", "quast/")
 PROKKA_FILEPATH = config.get("PROKKA_FILEPATH", "prokka/")
 BUSCO_FILEPATH = config.get("BUSCO_FILEPATH", "busco/")
 BARRNAP_FILEPATH = config.get("BARRNAP_FILEPATH", "barrnap/")
+ANTISMASH_FILEPATH = config.get("ANTISMASH_FILEPATH", "antismash/")
+
 AVAILABLE_THREADS = int(workflow.cores * 0.75)
 # Searching for Illumina files
 regex_raw_illumina_files = (
