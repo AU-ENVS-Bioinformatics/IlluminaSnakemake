@@ -40,6 +40,7 @@ include: "rules/busco.smk"
 include: "rules/barrnap.smk"
 include: "rules/find_16s.smk"
 include: "rules/compare.smk"
+include: "rules/clean.smk"
 
 
 # Rule all
