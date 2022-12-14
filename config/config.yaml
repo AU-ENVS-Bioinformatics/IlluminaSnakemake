@@ -59,3 +59,4 @@ antismash:
   # No cores and logfile
 
 ANTISMASH-THREADS: 200
+ANTISMASH-DOCKER: "antismash/standalone:6.1.1"

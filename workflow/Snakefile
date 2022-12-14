@@ -43,6 +43,7 @@ include: "rules/barrnap.smk"
 include: "rules/find_16s.smk"
 include: "rules/compare.smk"
 include: "rules/clean.smk"
+include: "rules/antismash.smk"
 
 
 # Rule all
