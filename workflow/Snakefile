@@ -77,3 +77,8 @@ rule all:
             f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.gff",
             sample=sample,
         ),
+
+
+rule antismash:
+    input:
+        expand(f"{DEFAULT_DEST_FILEPATH}{ANTISMASH_FILEPATH}{{sample}}", sample=sample),
