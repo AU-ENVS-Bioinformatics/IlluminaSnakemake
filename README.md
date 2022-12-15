@@ -26,6 +26,8 @@ conda activate sm_wgs
 export NUMEXPR_MAX_THREADS=100
 ```
 
+You can follow this [tutorial](https://guillaume-martin.github.io/saving-environment-variables-in-conda.html) to avoid running this step every single time.
+
 ## Quick start
 
 Just the most common commands you may be using all the time. Given that raw data are in the `reads` directory inside `IlluminaSnakemake`, run the following command to rename the files:
@@ -187,6 +189,19 @@ results/dRep/
     ├── figures
     └── log
 ```
+
+## Secondary metabolite biosynthetic gene clusters
+
+To search a genome sequence for secondary metabolite biosynthetic gene clusters you can use [antismash](https://antismash.secondarymetabolites.org/#!/start). For running antismash against all genomes run:
+
+```bash
+snakemake -n antismash
+snakemake -c100 antismash
+```
+
+This step relies on [docker](https://www.docker.com/) to run antismash. To check if you have Docker installed, run the command `docker ps`` or `docker info` on a terminal screen to verify it is installed and running.  If the command is not found, you may need to [install Docker first](https://docs.docker.com/engine/install/ubuntu/).
+
+Please check the [config file](config/config.yaml) for the flags you want to use and note that the ratio of the maximum number of threads indicated on the command line and threads indicated in the config file will determine whether the process will be parallelized or not.
 
 ## Custom installation
 
