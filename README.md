@@ -203,9 +203,16 @@ This step relies on [docker](https://www.docker.com/) to run antismash. To check
 
 Please check the [config file](config/config.yaml) for the flags you want to use and note that the ratio of the maximum number of threads indicated on the command line and threads indicated in the config file will determine whether the process will be parallelized or not.
 
+If you want to use [Big-Scape](https://bigscape-corason.secondarymetabolites.org/), you can also run the following code. Notice that .gbk files will be edited to have as an organism the filename (sample name).  We are also relying on docker for this step.
+
+```bash
+snakemake -n bigscape
+snakemake -c100 bigscape
+```
+
 ## Custom installation
 
-### Creating an environment from a YAML file
+### Creating an environment from a YAML file
 
 First, make sure to activate the Conda base environment with
 
