@@ -27,3 +27,45 @@ rule run_antismash:
         "--cpus {threads} "
         "{params.extra} "
         ">> {log} 2>&1 "
+
+rule edit_gbk:
+    input: 
+        expand(
+            f"{DEFAULT_DEST_FILEPATH}{ANTISMASH_FILEPATH}{{sample}}",
+            sample = set(sample)
+        )
+    output: 
+        expand(
+            f"{DEFAULT_DEST_FILEPATH}{ANTISMASH_FILEPATH}edited_gbk/{{sample}}.gbk",
+            sample = set(sample)
+        )
+    
+    log: "logs/antismash/edited_gbk.log"
+    conda:
+        "../envs/base_python.yaml"
+    script: "../scripts/edited_gbk.py"
+
+rule bigscape:
+    input:
+        expand(
+            f"{DEFAULT_DEST_FILEPATH}{ANTISMASH_FILEPATH}edited_gbk/{{sample}}.gbk",
+            sample = set(sample)
+        ),
+    output:
+        directory(f"{DEFAULT_DEST_FILEPATH}{ANTISMASH_FILEPATH}bigscape"),
+    log:
+        "logs/antismash/big_scape.log",
+    benchmark:
+        "benchmarks/antismash/big_scape.log"
+    conda:
+        "../envs/base_python.yaml"
+    params:
+        extra=" ".join(config.get("bigscape", "")),
+        indir=lambda wildcards: f"{DEFAULT_DEST_FILEPATH}{ANTISMASH_FILEPATH}edited_gbk",
+    threads: int(config.get("BIGSCAPE-THREADS", 200))
+    shell:
+        "bash workflow/scripts/run_bigscape.sh "
+        " {params.indir} {output} "
+        "-c {threads} "
+        "{params.extra} "
+        ">> {log} 2>&1 "

@@ -9,6 +9,7 @@ rule prokka:
         f"{DEFAULT_DEST_FILEPATH}{SPADES_FILEPATH}{{sample}}_spades/{{sample}}.fasta",
     output:
         out_dir=directory(f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka"),
+        gbk=f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka/{{sample}}.gbk",
         txt=report(
             f"{DEFAULT_DEST_FILEPATH}{PROKKA_FILEPATH}{{sample}}_prokka/{{sample}}.txt",
             caption="report/prokka_text.rst",
