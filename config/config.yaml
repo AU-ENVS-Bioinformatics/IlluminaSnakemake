@@ -58,7 +58,7 @@ antismash:
   - "--verbose" # Print verbose status information to stderr.
   # No cores and logfile
 
-# antismash:
+# bigscape:
   # Add yours options here
   # - "--mibig14" # Include BGCs from version 1.4 of MIBiG
 
