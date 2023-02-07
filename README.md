@@ -203,6 +203,8 @@ This step relies on [docker](https://www.docker.com/) to run antismash. To check
 
 Please check the [config file](config/config.yaml) for the flags you want to use and note that the ratio of the maximum number of threads indicated on the command line and threads indicated in the config file will determine whether the process will be parallelized or not.
 
+> :warning: **This pipeline assumes that you want to use prokka annotated genomes for antismash**: That means there would be no gene finding in antismash. You can either modify this behaviour in [the configuration file](config/config.yaml) or run this step aside.
+
 If you want to use [Big-Scape](https://bigscape-corason.secondarymetabolites.org/), you can also run the following code. Notice that .gbk files will be edited to have as an organism the filename (sample name).  We are also relying on docker for this step.
 
 ```bash
@@ -246,6 +248,14 @@ snakemake -c100 -rerun-triggers mtime
 Another command of interest is `--touch`:
 
 > Touch output files (mark them up to date without really changing them) instead of running their commands. This is used to pretend that the rules were executed, in order to fool future invocations of snakemake. Note that this will only touch files that would otherwise be recreated by Snakemake (e.g. because their input files are newer). For enforcing a touch, combine this with `--force`, `--forceall`, or` --forcerun`. Note however that you loose the provenance information when the files have been created in realitiy. Hence, this should be used only as a last resort. (default: False) (note that you can touch individual files, obtaining the same effect).
+
+If you're 100% confident that all your files are up to date, you can run the next command to touch all files:
+
+```bash
+snakemake -R $(snakemake --list-code-changes --list-input-changes --list-params-changes --list-version-changes) --touch
+snakemake -R $(snakemake --list-code-changes --list-input-changes --list-params-changes --list-version-changes) --touch -c1
+```
+
 
 As a last resort, you can always delete the folder with the results of the step you want to rerun and then run Snakemake normally.
 
