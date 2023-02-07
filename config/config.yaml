@@ -58,9 +58,12 @@ antismash:
   - "--verbose" # Print verbose status information to stderr.
   # No cores and logfile
 
-# bigscape:
-  # Add yours options here
-  # - "--mibig14" # Include BGCs from version 1.4 of MIBiG
+bigscape:
+  - "--mix" # Toggle to include an analysis mixing all classes. As BiG-SCAPE needs to calculate an all-vs-all distance network, this might use a lot of memory.
+  - "-v" # verbose
+  - "--include_singletons" # Toggle to activate. This will include BGCs that don't have a distance lower than the cutoff distance specified
+  # - "–mibig" # Use included BGCs from the MIBiG database versions 2.1
+  # - "-include_gbk_str '*'" # I would say this is redundant?
 
 ANTISMASH-THREADS: 200
 ANTISMASH-DOCKER: "antismash/standalone:6.1.1"
