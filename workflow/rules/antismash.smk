@@ -14,18 +14,17 @@ rule run_antismash:
         "logs/antismash/{sample}.log",
     benchmark:
         "benchmarks/antismash/{sample}.log"
-    conda:
-        "../envs/base_python.yaml"
+    singularity:
+        "docker://antismash/standalone:6.1.1"
     params:
         extra=" ".join(config.get("antismash", "")),
-        docker=config.get("ANTISMASH-DOCKER", "antismash/standalone:6.1.1"),
         outdir=lambda wildcards: f"{DEFAULT_DEST_FILEPATH}{ANTISMASH_FILEPATH}",
     threads: int(config.get("ANTISMASH-THREADS", 200))
     shell:
-        "bash workflow/scripts/run_antismash.sh "
-        "{input} {params.outdir} {params.docker} "
+        "antismash --output-dir {output} "
         "--cpus {threads} "
         "{params.extra} "
+        "{input}  "
         ">> {log} 2>&1 "
 
 rule edit_gbk:
@@ -57,15 +56,14 @@ rule bigscape:
         "logs/antismash/big_scape.log",
     benchmark:
         "benchmarks/antismash/big_scape.log"
-    conda:
-        "../envs/base_python.yaml"
+    singularity:
+        config.get("BIGSCAPE-SINGULARITY", "")
     params:
         extra=" ".join(config.get("bigscape", "")),
         indir=lambda wildcards: f"{DEFAULT_DEST_FILEPATH}{ANTISMASH_FILEPATH}edited_gbk",
     threads: int(config.get("BIGSCAPE-THREADS", 200))
     shell:
-        "bash workflow/scripts/run_bigscape.sh "
-        " {params.indir} {output} "
-        "-c {threads} "
+        "python /usr/src/BiG-SCAPE/bigscape.py "
+        "-i {params.indir} -o {output} -c {threads} "
         "{params.extra} "
-        ">> {log} 2>&1 "
+        ">> {log} 2>&1 " 

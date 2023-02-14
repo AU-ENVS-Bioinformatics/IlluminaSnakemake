@@ -9,3 +9,4 @@ dependencies:
   - quast == 5.2
   - prokka == 1.14.6
   - busco == 5.4
+  - singularity

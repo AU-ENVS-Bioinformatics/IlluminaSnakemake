@@ -195,21 +195,21 @@ results/dRep/
 To search a genome sequence for secondary metabolite biosynthetic gene clusters you can use [antismash](https://antismash.secondarymetabolites.org/#!/start). For running antismash against all genomes run:
 
 ```bash
-snakemake -n antismash
-snakemake -c100 antismash
+snakemake -n antismash --use-singularity
+snakemake -c100 antismash --use-singularity
 ```
 
-This step relies on [docker](https://www.docker.com/) to run antismash. To check if you have Docker installed, run the command `docker ps`` or `docker info` on a terminal screen to verify it is installed and running.  If the command is not found, you may need to [install Docker first](https://docs.docker.com/engine/install/ubuntu/).
+This step relies on [singularity](https://docs.sylabs.io/guides/3.5/user-guide/introduction.html) to run antismash and BiG-SCAPE.
 
 Please check the [config file](config/config.yaml) for the flags you want to use and note that the ratio of the maximum number of threads indicated on the command line and threads indicated in the config file will determine whether the process will be parallelized or not.
 
 > :warning: **This pipeline assumes that you want to use prokka annotated genomes for antismash**: That means there would be no gene finding in antismash. You can either modify this behaviour in [the configuration file](config/config.yaml) or run this step aside.
 
-If you want to use [Big-Scape](https://bigscape-corason.secondarymetabolites.org/), you can also run the following code. Notice that .gbk files will be edited to have as an organism the filename (sample name).  We are also relying on docker for this step.
+If you want to use [Big-Scape](https://bigscape-corason.secondarymetabolites.org/), you can also run the following code. Notice that .gbk files will be edited to have as an organism the filename (sample name).  Since this step relies in the previous one, the pipeline will figure out that it needs to run antimash before, **so you could simply run the following command**:
 
 ```bash
-snakemake -n bigscape
-snakemake -c100 bigscape
+snakemake -n bigscape --use-singularity
+snakemake -c100 bigscape --use-singularity
 ```
 
 ## Custom installation
