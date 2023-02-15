@@ -63,6 +63,7 @@ bigscape:
   - "-v" # verbose
   - "--include_singletons" # Toggle to activate. This will include BGCs that don't have a distance lower than the cutoff distance specified
   # - "–mibig" # Use included BGCs from the MIBiG database versions 2.1
+  - --include_gbk_str '*'
 
 ANTISMASH-THREADS: 200
 # https://github.com/medema-group/BiG-SCAPE/issues/22
