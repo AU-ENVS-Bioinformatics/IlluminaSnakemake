@@ -14,7 +14,7 @@ rule run_antismash:
         "logs/antismash/{sample}.log",
     benchmark:
         "benchmarks/antismash/{sample}.log"
-    singularity:
+    container:
         "docker://antismash/standalone:6.1.1"
     params:
         extra=" ".join(config.get("antismash", "")),
@@ -56,7 +56,7 @@ rule bigscape:
         "logs/antismash/big_scape.log",
     benchmark:
         "benchmarks/antismash/big_scape.log"
-    singularity:
+    container:
         config.get("BIGSCAPE-SINGULARITY", "")
     params:
         extra=" ".join(config.get("bigscape", "")),
