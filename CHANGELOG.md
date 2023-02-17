@@ -7,7 +7,6 @@
 
 * add antismash ([4d5be37](https://www.github.com/currocam/IlluminaSnakemake/commit/4d5be374e0900e410b4bca17aa5c05e4ae9ea618))
 * add bigscape ([e2c0041](https://www.github.com/currocam/IlluminaSnakemake/commit/e2c004118b068185555c832c0901f1ff7b475325))
-* add cleanup step ([9d75bab](https://www.github.com/currocam/IlluminaSnakemake/commit/9d75babd428f26051f442585612d97c0f76460c4))
 * antismash ([8ae5d1b](https://www.github.com/currocam/IlluminaSnakemake/commit/8ae5d1bfd076ef3d89b4a5c4f8bb77edcc6273da))
 
 
