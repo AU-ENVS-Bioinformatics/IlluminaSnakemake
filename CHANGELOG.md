@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.1.0](https://www.github.com/currocam/IlluminaSnakemake/compare/v1.0.0...v1.1.0) (2023-02-15)
+
+
+### Features
+
+* add antismash ([4d5be37](https://www.github.com/currocam/IlluminaSnakemake/commit/4d5be374e0900e410b4bca17aa5c05e4ae9ea618))
+* add bigscape ([e2c0041](https://www.github.com/currocam/IlluminaSnakemake/commit/e2c004118b068185555c832c0901f1ff7b475325))
+* add cleanup step ([9d75bab](https://www.github.com/currocam/IlluminaSnakemake/commit/9d75babd428f26051f442585612d97c0f76460c4))
+* antismash ([8ae5d1b](https://www.github.com/currocam/IlluminaSnakemake/commit/8ae5d1bfd076ef3d89b4a5c4f8bb77edcc6273da))
+
+
+### Bug Fixes
+
+* add force to prokka ([8e2094e](https://www.github.com/currocam/IlluminaSnakemake/commit/8e2094ea93f81e458f05c71dc8da5f1e3a02dae7))
+* add regex case ([0851759](https://www.github.com/currocam/IlluminaSnakemake/commit/0851759ab5c11ac616e09de7be013645077d9d1f))
+
 ## 1.0.0 (2022-10-24)
 
 
