@@ -23,8 +23,8 @@ rule spades:
         extra=" ".join(config.get("spades", "")),
     log:
         "logs/spades/{sample}.log",
-    conda:
-        "../envs/assembling_genome.yaml"
+    container:
+        "docker://staphb/spades:3.15.5"
     threads: AVAILABLE_THREADS
     shell:
         "spades.py {params.extra} "
