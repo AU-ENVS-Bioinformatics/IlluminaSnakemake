@@ -21,8 +21,8 @@ rule find_16s:
         gff=f"{DEFAULT_DEST_FILEPATH}{BARRNAP_FILEPATH}{{sample}}_filtered_rrna.gff",
     params:
         config.get("minumun_16s_allowed", 900),
-    conda:
-        "../envs/base_python.yaml"
+    container: 
+        "docker://nanozoo/biopython:1.74--b03961c"
     log:
         "logs/barrnap/{sample}_filtered.log",
     script:

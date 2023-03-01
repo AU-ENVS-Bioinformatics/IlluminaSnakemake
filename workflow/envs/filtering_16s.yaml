@@ -1,6 +1,0 @@
-channels:
-  - bioconda
-  - conda-forge
-dependencies:
-  - python = 3.7.12
-  - Bio = 1.79

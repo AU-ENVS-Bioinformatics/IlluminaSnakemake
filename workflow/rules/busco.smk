@@ -20,7 +20,7 @@ rule busco:
     params:
         extra=" ".join(config.get("busco", "")),
         download_path=f"{DEFAULT_DEST_FILEPATH}{BUSCO_FILEPATH}busco_downloads",
-    conda:
+    conda: 
         "../envs/busco.yaml"
     threads: AVAILABLE_THREADS
     shell:
