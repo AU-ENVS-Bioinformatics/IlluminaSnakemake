@@ -23,7 +23,7 @@ rule barrnap:
     log:
         "logs/barrnap/{sample}.log",
     conda:
-        "../envs/annotate_bacterial_genome.yaml"
+        "../envs/barrnap.yaml"
     shell:
         "barrnap -o {output.fasta} < {input} > {output.gff} "
         "2> {log}"

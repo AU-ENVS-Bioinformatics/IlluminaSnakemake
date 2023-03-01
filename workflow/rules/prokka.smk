@@ -24,8 +24,8 @@ rule prokka:
         ),
     log:
         "logs/prokka/{sample}.log",
-    conda:
-        "../envs/annotate_bacterial_genome.yaml"
+    container:
+        "docker://staphb/prokka:1.14.6"
     params:
         extra=" ".join(config.get("prokka", "")),
     threads: AVAILABLE_THREADS
