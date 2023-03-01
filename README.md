@@ -6,7 +6,7 @@
 
 A Snakemake workflow for Illumina raw reads to genome assemblies, annotate genomes and compare them. 
 
-## Setting up Snakemake
+## Setting up the pipeline
 
 ### Cloning repository
 
@@ -15,11 +15,24 @@ git clone https://github.com/currocam/IlluminaSnakemake
 cd IlluminaSnakemake
 ```
 
-### Activating Conda environment
+### Installation
+
+### Custom installation
+
+There are two ways to install the pipeline. One is to create a conda enviroment with all the necessary programs.
+
+### Containerized installation
+
+However, you may find incompatibilities in the environment creation. In that case, you can make use of Conda and Singularity to run each of the programs in a separate environment. You will need a base installation of [Snakemake](https://snakemake.readthedocs.io/en/stable/#), [Singularity](https://docs.sylabs.io/guides/3.5/user-guide/introduction.html) and [Mamba](https://mamba.readthedocs.io/en/latest/installation.html).
+
+Assuming that you have a preexisting Mamba installation:
 
 ```bash
-conda activate sm_wgs
+mamba create -c conda-forge -c bioconda -n snakemake snakemake singularity
+conda activate snakemake
 ```
+
+> :warning: ****You will need to add `--use-conda` and `--use-singularity` to every command**.
 
 ### Fixing BUSCO requirement for parallelization
 
@@ -37,16 +50,34 @@ Just the most common commands you may be using all the time. Given that raw data
 snakemake -c8 rename
 ```
 
-Then, run the following to display what would be done (taking only the file modification date into account for deciding if a substep should be re-runned):
+or, if using conda and singularity:
+
+```bash
+snakemake -c8 rename --use-conda --use-singularity
+```
+
+Then, run the following to display what would be done (taking only the file modification date into account for deciding if a substep should be re-run):
 
 ```bash
 snakemake -n -rerun-triggers mtime
+```
+
+or, if using conda and singularity:
+
+```bash
+snakemake -n -rerun-triggers mtime --use-conda --use-singularity
 ```
 
 If it looks okay, just run it by specifying the maximum number of threads the pipeline can use (although single steps are forced to a maximum of 0.75 * `MAX_CORES`)
 
 ```bash
 snakemake -c75 -rerun-triggers mtime
+```
+
+or, if using conda and singularity:
+
+```bash
+snakemake -c75 -rerun-triggers mtime --use-conda --use-singularity
 ```
 
 This will probably take a while. You may want to check the log files for each subprocess while are being written inside the `logs` directory. 
@@ -76,7 +107,13 @@ The script expects a directory named `reads` where the raw Illumina `fastq.gz` f
 The first step is to rename the different files to just display the sample and the read. You can do this manually or run the following command. In case of renaming files manually, you should move them into the `results/renamed_raw_reads` (or edit the `config.yaml` file). 
 
 ```bash
-snakemake -c1 rename
+snakemake -c1 rename 
+```
+
+or, if using conda and singularity:
+
+```bash
+snakemake -c1 rename --use-conda --use-singularity
 ```
 
 ### Running snakemake
@@ -122,7 +159,7 @@ tree -L 2
 ├── README.md
 ├── config
 ├── enviroment.yaml
-├── logs # Log files inside are been updating with the stdout and stderr, in case you want to check how is everything going.
+├── logs # Log files inside are been updating with and stderr, in case you want to check how is everything going.
 │   ├── busco
 │   ├── fastqc
 │   ├── prokka
@@ -153,7 +190,14 @@ There are 2 modes: by default, all samples are compared.
 ```bash
 snakemake -c50 compare
 ```
-However, it may be useful to compare only a number of genomes with each other. In this case, the pipeline expects a file with as many lines as files and their respective addresses. For example, 
+
+or, if using conda and singularity:
+
+```bash
+snakemake -c50 compare --use-conda --use-singularity
+```
+
+However, it may be useful to compare only some of genomes with each other. In this case, the pipeline expects a file with as many lines as files and their respective addresses. For example, 
 
 ```bash
 cat subsample1.txt 
@@ -200,7 +244,7 @@ snakemake -n antismash --use-singularity
 snakemake -c100 antismash --use-singularity
 ```
 
-This step relies on [singularity](https://docs.sylabs.io/guides/3.5/user-guide/introduction.html) to run antismash and BiG-SCAPE.
+This step relies on [singularity](https://docs.sylabs.io/guides/3.5/user-guide/introduction.html) to run antismash and BiG-SCAPE (it will not work without it). 
 
 Please check the [config file](config/config.yaml) for the flags you want to use and note that the ratio of the maximum number of threads indicated on the command line and threads indicated in the config file will determine whether the process will be parallelized or not.
 
@@ -212,29 +256,6 @@ If you want to use [Big-Scape](https://bigscape-corason.secondarymetabolites.org
 snakemake -n bigscape --use-singularity
 snakemake -c100 bigscape --use-singularity
 ```
-
-## Custom installation
-
-### Creating an environment from a YAML file
-
-First, make sure to activate the Conda base environment with
-
-```bash
-conda activate base
-```
-
-The `environment.yaml` file can be used to install all required software into an isolated Conda environment with the name `sm_wgs` via:
-
-```bash
-mamba env create --name sm_wgs --file environment.yaml
-```
-
-O, using Conda:
-
-```bash
-conda env create --name sm_wgs --file environment.yaml
-```
-
 ## A few considerations for dealing with unexpected behavior
 
 Because of Snakemake's way of deciding whether a step needs to be rerun, you may encounter undesired behavior. For example, rerunning an entire pipeline after modifying a single parameter (which only affects one of the final steps), moving a directory, or adding new reads.
