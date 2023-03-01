@@ -24,7 +24,7 @@ rule prokka:
         ),
     log:
         "logs/prokka/{sample}.log",
-    container: 
+    container:
         "docker://staphb/prokka:1.14.6"
     params:
         extra=" ".join(config.get("prokka", "")),

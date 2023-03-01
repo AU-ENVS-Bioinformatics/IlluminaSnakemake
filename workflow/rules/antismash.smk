@@ -27,28 +27,31 @@ rule run_antismash:
         "{input}  "
         ">> {log} 2>&1 "
 
+
 rule edit_gbk:
-    input: 
+    input:
         expand(
             f"{DEFAULT_DEST_FILEPATH}{ANTISMASH_FILEPATH}{{sample}}",
-            sample = set(sample)
-        )
-    output: 
+            sample=set(sample),
+        ),
+    output:
         expand(
             f"{DEFAULT_DEST_FILEPATH}{ANTISMASH_FILEPATH}edited_gbk/{{sample}}.gbk",
-            sample = set(sample)
-        )
-    
-    log: "logs/antismash/edited_gbk.log"
+            sample=set(sample),
+        ),
+    log:
+        "logs/antismash/edited_gbk.log",
     conda:
         "../envs/base_python.yaml"
-    script: "../scripts/edited_gbk.py"
+    script:
+        "../scripts/edited_gbk.py"
+
 
 rule bigscape:
     input:
         expand(
             f"{DEFAULT_DEST_FILEPATH}{ANTISMASH_FILEPATH}edited_gbk/{{sample}}.gbk",
-            sample = set(sample)
+            sample=set(sample),
         ),
     output:
         directory(f"{DEFAULT_DEST_FILEPATH}{ANTISMASH_FILEPATH}bigscape"),
@@ -66,4 +69,4 @@ rule bigscape:
         "python /usr/src/BiG-SCAPE/bigscape.py "
         "-i {params.indir} -o {output} -c {threads} "
         "{params.extra} "
-        ">> {log} 2>&1 " 
+        ">> {log} 2>&1 "
