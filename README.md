@@ -253,9 +253,12 @@ Please check the [config file](config/config.yaml) for the flags you want to use
 If you want to use [Big-Scape](https://bigscape-corason.secondarymetabolites.org/), you can also run the following code. Notice that .gbk files will be edited to have as an organism the filename (sample name).  Since this step relies in the previous one, the pipeline will figure out that it needs to run antimash before, **so you could simply run the following command**:
 
 ```bash
-snakemake -n bigscape --use-singularity
-snakemake -c100 bigscape --use-singularity
+snakemake -n bigscape --use-singularity --singularity-args ' --writable'
+snakemake -c100 bigscape --use-singularity --singularity-args ' --writable'
 ```
+
+See [this issue](https://github.com/medema-group/BiG-SCAPE/issues/22) for more information about why we need the '--writable' argument. 
+
 ## A few considerations for dealing with unexpected behavior
 
 Because of Snakemake's way of deciding whether a step needs to be rerun, you may encounter undesired behavior. For example, rerunning an entire pipeline after modifying a single parameter (which only affects one of the final steps), moving a directory, or adding new reads.
